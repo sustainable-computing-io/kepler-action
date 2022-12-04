@@ -20,7 +20,7 @@ async function run() {
     cli.executeCommand(BCC_2)
 
     core.info(`kubectl`);
-    let kubectl_0 = cli.ConvertCommand("curl -LO \"https://dl.k8s.io/release/v1.25.4/bin/linux/amd64/kubectl\"");
+    let kubectl_0 = cli.ConvertCommand("curl -LO https://dl.k8s.io/release/v1.25.4/bin/linux/amd64/kubectl");
     cli.executeCommand(kubectl_0)
 
   } catch (error) {
