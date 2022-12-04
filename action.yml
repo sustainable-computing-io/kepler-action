@@ -1,13 +1,5 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
-inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
-    required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
+name: 'kepler github action for set up cluster'
+description: 'kepler github action for set up cluster'
 runs:
   using: 'node16'
   main: 'dist/index.js'

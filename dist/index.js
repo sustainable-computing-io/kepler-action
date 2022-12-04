@@ -1,6 +1,57 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 283:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const process = __nccwpck_require__(129);
+const core = __nccwpck_require__(186);
+
+exports.ConvertCommand = function(str) {
+    core.debug(str);
+    var command = {}
+    command.args = [];
+    command.command = "";
+    const arr = str.split(' ');
+    for (let i = 0; i < arr.length; i++) {
+        if (i == 0) {
+            command.command = arr[i];
+        } else {
+            command.args[i - 1] = arr[i];
+        }
+    }
+    return command;
+}
+
+exports.executeCommand = function executeCommand(command) {
+    core.debug(command.command);
+    core.debug(command.args);
+    return this.handleStatus(process.spawnSync(command.command, command.args));
+}
+
+exports.handleStatus = function handleStatus(rs) {
+    if (rs.status !== 0) {
+        if (rs.stderr) {
+            core.setFailed(rs.stderr.toString('utf-8'));
+        }
+        if (rs.output) {
+            core.setFailed(rs.output.toString('utf-8'));
+        }
+        if (!rs.stderr && !rs.output) {
+            core.setFailed(JSON.stringify(rs));
+        }
+    } else {
+        if (rs.stderr) {
+            core.debug("std err:"+rs.stderr.toString('utf-8'));
+        }
+        if (rs.output) {
+            core.debug("std output:"+rs.output.toString('utf-8'));
+        }
+    }
+};
+
+/***/ }),
+
 /***/ 351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -2688,28 +2739,19 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 258:
-/***/ ((module) => {
-
-let wait = function (milliseconds) {
-  return new Promise((resolve) => {
-    if (typeof milliseconds !== 'number') {
-      throw new Error('milliseconds not a number');
-    }
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
-};
-
-module.exports = wait;
-
-
-/***/ }),
-
 /***/ 357:
 /***/ ((module) => {
 
 "use strict";
 module.exports = require("assert");
+
+/***/ }),
+
+/***/ 129:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 
@@ -2835,20 +2877,32 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(186);
-const wait = __nccwpck_require__(258);
-
+const cli = __nccwpck_require__(283);
 
 // most @actions toolkit packages have async methods
 async function run() {
+  //  const nameToGreet = core.getInput('who-to-greet');
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
-
+    core.info(`Start to build env`);
     core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    core.info(`Linux header`);
+    let linuxheader_0 = cli.ConvertCommand("sudo apt-get install -y linux-headers-`uname -r`");
+    cli.executeCommand(linuxheader_0)
+    let linuxheader_1 = cli.ConvertCommand("sudo ls /usr/src/linux-headers-`uname -r`");
+    cli.executeCommand(linuxheader_1)
+    
+    core.info(`BCC deb`);
+    let BCC_0 = cli.ConvertCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v0.25.0/bcc_v0.25.0.tar.gz");
+    cli.executeCommand(BCC_0)
+    let BCC_1 = cli.ConvertCommand("tar -zxvf bcc_v0.25.0.tar.gz");
+    cli.executeCommand(BCC_1)
+    let BCC_2 = cli.ConvertCommand("sudo dpkg -i libbcc_0.25.0-1_amd64.deb");
+    cli.executeCommand(BCC_2)
 
-    core.setOutput('time', new Date().toTimeString());
+    core.info(`kubectl`);
+    let kubectl_0 = cli.ConvertCommand("curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"");
+    cli.executeCommand(kubectl_0)
+
   } catch (error) {
     core.setFailed(error.message);
   }
