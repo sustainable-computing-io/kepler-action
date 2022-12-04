@@ -2886,10 +2886,8 @@ async function run() {
     core.info(`Start to build env`);
     core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
     core.info(`Linux header`);
-    let linuxheader_0 = cli.ConvertCommand("sudo apt-get install -y linux-headers-`uname -r`");
+    let linuxheader_0 = cli.ConvertCommand("sudo apt-get install -y linux-headers-5.15.0-1023-azure");
     cli.executeCommand(linuxheader_0)
-    let linuxheader_1 = cli.ConvertCommand("sudo ls /usr/src/linux-headers-`uname -r`");
-    cli.executeCommand(linuxheader_1)
     
     core.info(`BCC deb`);
     let BCC_0 = cli.ConvertCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v0.25.0/bcc_v0.25.0.tar.gz");
@@ -2900,7 +2898,7 @@ async function run() {
     cli.executeCommand(BCC_2)
 
     core.info(`kubectl`);
-    let kubectl_0 = cli.ConvertCommand("curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"");
+    let kubectl_0 = cli.ConvertCommand("curl -LO \"https://dl.k8s.io/release/v1.25.4/bin/linux/amd64/kubectl\"");
     cli.executeCommand(kubectl_0)
 
   } catch (error) {
