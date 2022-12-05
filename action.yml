@@ -1,5 +1,9 @@
 name: 'kepler github action for set up cluster'
 description: 'kepler github action for set up cluster'
+inputs:
+  runningBranch:  # id of input
+    description: 'runningBranch for kepler CI'
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
