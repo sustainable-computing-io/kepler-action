@@ -16,13 +16,37 @@ jobs:
     - run: npm test
 
   # test action works running from the graph
-  test:
+  test_bcc:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        runningBranch: [bcc, kind, microshift]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: ${{ matrix.runningBranch }}
+        runningBranch: bcc
+    - name: verify
+      run: |
+        dpkg -l | grep bcc
+
+  # test action works running from the graph
+  test_kind:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        runningBranch: kind
+    - name: verify
+      run: |
+        dpkg -l | grep bcc
+        docker ps -a
+        kind get kubeconfig --name=kind
+        kubectl get pods
+
+  # test action works running from the graph
+  test_microshift:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        runningBranch: microshift
