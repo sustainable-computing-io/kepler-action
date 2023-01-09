@@ -1,4 +1,5 @@
 node_modules/
+kube-prometheus/
 
 # Editors
 .vscode/
