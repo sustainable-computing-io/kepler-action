@@ -36,7 +36,7 @@ async function kubectl() {
 async function kind() {
   core.info(`kind`);
   shell.exec("git clone https://github.com/sustainable-computing-io/KeplerK8SAction --depth=1");
-  shell.exec("bash -c ./KeplerK8SAction/kind/common.sh")
+  shell.exec("cd KeplerK8SAction && bash -c ./kind/common.sh")
   return
 }
 
