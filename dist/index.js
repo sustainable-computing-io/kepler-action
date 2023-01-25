@@ -10153,9 +10153,14 @@ async function kubectl() {
 }
 
 async function kind() {
+  const runningEnv = core.getInput('runningEnv');
   core.info(`kind`);
-  shell.exec("git clone https://github.com/sustainable-computing-io/KeplerK8SAction --depth=1");
-  shell.exec("cd KeplerK8SAction && bash -c ./kind/common.sh")
+  if (runningEnv == 'CI') {
+    shell.exec("bash -c ./main.sh")
+  } else {
+    shell.exec("git clone https://github.com/sustainable-computing-io/kepler-action --depth=1");
+    shell.exec("cd kepler-action && bash -c ./main.sh")
+  }
   return
 }
 
