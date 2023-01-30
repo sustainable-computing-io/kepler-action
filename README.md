@@ -16,10 +16,7 @@ You can now consume the action by referencing the main branch
 ```
 
 ## Local usage
-1. pre-request
-you need to locate your BCC lib and linux header.
-2. modify kind [config](./kind/manifests/kind.yml) to make sure `extraMounts:` cover linux header and BCC.
-3. The scripts are the source for the kepler cluster commands like `./kind/common.sh`.
+[here](https://github.com/sustainable-computing-io/local-dev-cluster)
 
 ## Docker registry
 There's a docker registry available which is exposed at `localhost:5001`.
