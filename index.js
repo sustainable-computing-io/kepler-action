@@ -35,8 +35,8 @@ async function kubectl() {
 
 async function kind() {
   core.info(`kind`);
-  shell.exec("git clone https://github.com/sustainable-computing-io/KeplerK8SAction --depth=1");
-  shell.exec("cd KeplerK8SAction && bash -c ./kind/common.sh")
+  shell.exec("git clone https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+  shell.exec("cd local-dev-cluster && bash -c ./main.sh")
   return
 }
 
