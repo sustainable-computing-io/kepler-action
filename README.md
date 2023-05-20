@@ -1,8 +1,8 @@
 # Github action for sustainable-computing-io
 
-This repo provides the scripts to create a local kubernetes cluster to used for development or integration tests.
+This repo provides the scripts to create a local kubernetes cluster to used for integration tests.
 
-[![units-test](https://github.com/sustainable-computing-io/KeplerK8SAction/actions/workflows/test.yml/badge.svg)](https://github.com/sustainable-computing-io/KeplerK8SAction/actions/workflows/test.yml)
+[![units-test](https://github.com/sustainable-computing-io/KeplerK8SAction/actions/workflows/test.yml/badge.svg)](https://github.com/sustainable-computing-io/KeplerK8SAction/actions/workflows/test.yml)![GitHub](https://img.shields.io/github/license/sustainable-computing-io/kepler-action)[![Contribute](https://img.shields.io/static/v1?label=Contributing&message=guide&color=blue)](https://github.com/sustainable-computing-io/kepler-action/blob/main/developer.md) 
 
 ## Usage in GHA
 
