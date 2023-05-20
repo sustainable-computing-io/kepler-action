@@ -5,7 +5,7 @@ async function bcc() {
   core.info(`Start to build env`);
   core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
   core.info(`Linux header`);
-  if (shell.exec("sudo apt-get install -y kernel-devel linux-headers-`uname -r`").code !== 0){
+  if (shell.exec("sudo apt-get install -y linux-headers-`uname -r`").code !== 0){
     shell.echo("fail to install linux headers");
     shell.exit(1);
   }
