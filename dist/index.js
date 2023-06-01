@@ -10154,7 +10154,7 @@ async function kubectl() {
 
 async function kind() {
   core.info(`kind`);
-  shell.exec("git clone https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+  shell.exec("git clone -b v0.0.0 https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
   shell.exec("cd local-dev-cluster && bash -c ./main.sh")
   return
 }
