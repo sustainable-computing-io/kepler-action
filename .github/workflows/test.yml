@@ -25,7 +25,10 @@ jobs:
         runningBranch: bcc
     - name: verify
       run: |
-        dpkg -l | grep bcc
+        if [ $(dpkg -l | grep bcc | wc -l) == 0 ]; then
+            echo "no bcc package found"
+            exit 1
+        fi
 
   # test action works running from the graph
   test_kind:
@@ -37,10 +40,26 @@ jobs:
         runningBranch: kind
     - name: verify
       run: |
-        dpkg -l | grep bcc
-        docker ps -a
-        kind get kubeconfig --name=kind
-        kubectl get pods
+        ./verify.sh
+
+  # test action works running from the graph
+  test_kind_with_specific_version:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./
+      with:
+        runningBranch: kind
+        bcc_version: 0.25.0
+        kubectl_version: 1.27.2
+        local_dev_cluster_version: v0.0.0
+        kind_version: 0.19.0
+        prometheus_enable: true
+        prometheus_operator_version: v0.12.0
+        grafana_enable: true
+    - name: verify
+      run: |
+        ./verify.sh
 
   # test action works running from the graph
   test_microshift:

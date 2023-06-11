@@ -10128,16 +10128,21 @@ async function bcc() {
     shell.echo("fail to install linux headers");
     shell.exit(1);
   }
-  core.info(`BCC deb`);
-  if (shell.exec("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v0.25.0/bcc_v0.25.0.tar.gz").code !==0){
+  let bcc_version = core.getInput('bcc_version');
+  core.debug(bcc_version);
+  if (bcc_version === undefined || bcc_version == null || bcc_version.length === 0) {
+    bcc_version="0.25.0";
+  }
+  core.info(`Get BCC with version:` + bcc_version);
+  if (shell.exec("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+bcc_version+"/bcc_v"+bcc_version+".tar.gz").code !==0){
     shell.echo("fail to get BCC deb");
     shell.exit(1);
   }
-  if (shell.exec("tar -zxvf bcc_v0.25.0.tar.gz").code !== 0) {
+  if (shell.exec("tar -zxvf bcc_v"+bcc_version+".tar.gz").code !== 0) {
     shell.echo("fail to untar BCC deb");
     shell.exit(1);
   }
-  if (shell.exec("sudo dpkg -i libbcc_0.25.0-1_amd64.deb").code !== 0) {
+  if (shell.exec("sudo dpkg -i libbcc_"+bcc_version+"-1_amd64.deb").code !== 0) {
     shell.echo("fail to install BCC deb");
     shell.exit(1);
   }
@@ -10145,17 +10150,69 @@ async function bcc() {
 }
 
 async function kubectl() {
-  core.info(`kubectl`);
-  if (shell.exec("curl -LO https://dl.k8s.io/release/v1.25.4/bin/linux/amd64/kubectl").code !== 0) {
+  let kubectl_version = core.getInput('kubectl_version');
+  core.debug(kubectl_version);
+  if (kubectl_version === undefined || kubectl_version == null || kubectl_version.length === 0) {
+    kubectl_version="1.25.4";
+  }
+  core.info(`Get kubectl with version `+ kubectl_version);
+  if (shell.exec("curl -LO https://dl.k8s.io/release/v"+kubectl_version+"/bin/linux/amd64/kubectl").code !== 0) {
     shell.echo("fail to install kubectl");
     shell.exit(1);
   }
 }
 
 async function kind() {
-  core.info(`kind`);
-  shell.exec("git clone -b v0.0.0 https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
-  shell.exec("cd local-dev-cluster && bash -c ./main.sh")
+  let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
+  core.debug(local_dev_cluster_version);
+  if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
+    local_dev_cluster_version="v0.0.0";
+  }
+  core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
+  shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+  let parameterExport  = "";
+  const kind_version = core.getInput('kind_version');
+  core.debug(kind_version);
+  if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
+      core.info(`use kind version `+kind_version);
+      // kind_version, KIND_VERSION
+      parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+  }
+  const prometheus_enable = core.getInput('prometheus_enable');
+  core.debug(prometheus_enable);
+  if (prometheus_enable !== undefined && prometheus_enable!=null && prometheus_enable.length!=0) {
+    core.info(`use prometheus enable `+prometheus_enable);
+    //  prometheus_enable, PROMETHEUS_ENABLE
+    if (parameterExport != "") {
+      parameterExport = parameterExport + " && "
+    }
+    parameterExport = parameterExport + "export PROMETHEUS_ENABLE="+prometheus_enable;
+  }
+  const prometheus_operator_version = core.getInput('prometheus_operator_version');
+  core.debug(prometheus_operator_version);
+  if (prometheus_operator_version !== undefined && prometheus_operator_version!=null && prometheus_operator_version.length!=0) {
+    core.info(`use prometheus operator version `+prometheus_operator_version);
+    //  prometheus_operator_version, PROMETHEUS_OPERATOR_VERSION
+    if (parameterExport != "") {
+      parameterExport = parameterExport + " && "
+    }
+    parameterExport = parameterExport + "export PROMETHEUS_OPERATOR_VERSION="+prometheus_operator_version;
+  }
+  const grafana_enable = core.getInput('grafana_enable');
+  core.debug(grafana_enable);
+  if (grafana_enable !== undefined && grafana_enable!=null && grafana_enable.length!=0) {
+    core.info(`use grafana enable `+grafana_enable);
+    //   grafana_enable, GRAFANA_ENABLE
+    if (parameterExport != "") {
+      parameterExport = parameterExport + " && "
+    }
+    parameterExport = parameterExport + "export GRAFANA_ENABLE="+grafana_enable;
+  }
+  if (parameterExport != "") {
+    parameterExport = parameterExport + " && "
+  }
+  core.debug(parameterExport);
+  shell.exec(parameterExport +" cd local-dev-cluster && bash -c ./main.sh")
   return
 }
 
