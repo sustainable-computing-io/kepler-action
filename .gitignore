@@ -68,3 +68,5 @@ typings/
 .next
 
 local-dev-cluster
+
+_output
