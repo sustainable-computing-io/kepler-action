@@ -93,7 +93,48 @@ async function kind() {
     parameterExport = parameterExport + " && "
   }
   core.debug(parameterExport);
-  shell.exec(parameterExport +" cd local-dev-cluster && bash -c ./main.sh")
+  shell.exec(parameterExport +" cd local-dev-cluster && bash -c './main.sh kind_up'")
+  return
+}
+
+async function microshift() {
+  let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
+  core.debug(local_dev_cluster_version)
+  if (local_dev_cluster_version == undefined || local_dev_cluster_version == null || local_dev_cluster_version.length == 0){
+    local_dev_cluster_version="v0.0.0";
+  }
+  core.info('Get local-dev-cluster with version '+local_dev_cluster_version)
+  shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+  let parameterExport = "";
+  const prometheus_enable = core.getInput('prometheus_enable');
+  core.debug(prometheus_enable);
+  if (prometheus_enable !=undefined && prometheus_enable !=null && prometheus_enable.length !=0){
+    core.info('use prometheus enable '+prometheus_enable);
+    parameterExport = parameterExport+"export PROMETHEUS_ENABLE="+prometheus_enable;
+  }
+  const prometheus_operator_version = core.getInput('prometheus_operator_version');
+  core.debug(prometheus_operator_version);
+  if (prometheus_operator_version !=undefined && prometheus_operator_version !=null && prometheus_operator_version.length!=0){
+    core.info('use prometheus operator version '+prometheus_operator_version);
+    if (parameterExport!=""){
+      parameterExport=parameterExport+" && "
+    }
+    parameterExport=parameterExport+"export PROMETHEUS_OPERATOR_VERSION="+prometheus_operator_version;
+  }
+  const grafana_enable = core.getInput('grafana_enable');
+  core.debug(grafana_enable);
+  if (grafana_enable !==undefined && grafana_enable!=null && grafana_enable.length!=0){
+    core.info('use grafana enable '+grafana_enable);
+    if (parameterExport !=""){
+      parameterExport = parameterExport+" && "
+    }
+    parameterExport=parameterExport+"export GRAFANA_ENABLE="+grafana_enable;
+  }
+  if (parameterExport !=""){
+    parameterExport=parameterExport+" && "
+  }
+  core.debug(parameterExport);
+  shell.exec(parameterExport +" cd local-dev-cluster && bash -c './main.sh microshift_up'")
   return
 }
 
@@ -110,8 +151,9 @@ async function run() {
       return kind()
     }
     if (runningBranch == 'microshift') {
-      core.info(`to do for microshift`);
-      return
+      bcc()
+      kubectl()
+      return microshift()
     }
     core.error('runningBranch should in value of [bcc, kind, microshift]')
   } catch (error) {
