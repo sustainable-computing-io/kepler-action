@@ -43,7 +43,19 @@ async function kubectl() {
   }
 }
 
-async function kind() {
+async function setup() {
+  let platform = core.getInput('platform');
+  let arg="";
+  core.debug(platform);
+  if (platform == undefined || platform == null || platform.length ===0){
+    platform="kind";
+  }
+  if (platform === "kind"){
+    arg="kind_up";
+  }
+  if (platform === "microshift"){
+    arg="microshift_up";
+  }
   let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
   core.debug(local_dev_cluster_version);
   if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
@@ -52,12 +64,14 @@ async function kind() {
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
   shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
   let parameterExport  = "";
-  const kind_version = core.getInput('kind_version');
-  core.debug(kind_version);
-  if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
-      core.info(`use kind version `+kind_version);
+  if (platform === "kind"){
+    const kind_version = core.getInput('kind_version');
+    core.debug(kind_version);
+    if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
+        core.info(`use kind version `+kind_version);
       // kind_version, KIND_VERSION
-      parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+        parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+    }
   }
   const prometheus_enable = core.getInput('prometheus_enable');
   core.debug(prometheus_enable);
@@ -93,7 +107,7 @@ async function kind() {
     parameterExport = parameterExport + " && "
   }
   core.debug(parameterExport);
-  shell.exec(parameterExport +" cd local-dev-cluster && bash -c ./main.sh")
+  shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh ${arg}'`)
   return
 }
 
@@ -107,11 +121,12 @@ async function run() {
     if (runningBranch == 'kind') {
       bcc()
       kubectl()
-      return kind()
+      return setup()
     }
     if (runningBranch == 'microshift') {
-      core.info(`to do for microshift`);
-      return
+      bcc()
+      kubectl()
+      return setup()
     }
     core.error('runningBranch should in value of [bcc, kind, microshift]')
   } catch (error) {
