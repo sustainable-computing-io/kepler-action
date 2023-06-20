@@ -10162,7 +10162,19 @@ async function kubectl() {
   }
 }
 
-async function kind() {
+async function setup() {
+  let platform = core.getInput('platform');
+  let arg="";
+  core.debug(platform);
+  if (platform == undefined || platform == null || platform.length ===0){
+    platform="kind";
+  }
+  if (platform === "kind"){
+    arg="kind_up";
+  }
+  if (platform === "microshift"){
+    arg="microshift_up";
+  }
   let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
   core.debug(local_dev_cluster_version);
   if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
@@ -10171,12 +10183,14 @@ async function kind() {
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
   shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
   let parameterExport  = "";
-  const kind_version = core.getInput('kind_version');
-  core.debug(kind_version);
-  if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
-      core.info(`use kind version `+kind_version);
+  if (platform === "kind"){
+    const kind_version = core.getInput('kind_version');
+    core.debug(kind_version);
+    if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
+        core.info(`use kind version `+kind_version);
       // kind_version, KIND_VERSION
-      parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+        parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+    }
   }
   const prometheus_enable = core.getInput('prometheus_enable');
   core.debug(prometheus_enable);
@@ -10212,48 +10226,7 @@ async function kind() {
     parameterExport = parameterExport + " && "
   }
   core.debug(parameterExport);
-  shell.exec(parameterExport +" cd local-dev-cluster && bash -c './main.sh kind_up'")
-  return
-}
-
-async function microshift() {
-  let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
-  core.debug(local_dev_cluster_version)
-  if (local_dev_cluster_version == undefined || local_dev_cluster_version == null || local_dev_cluster_version.length == 0){
-    local_dev_cluster_version="v0.0.0";
-  }
-  core.info('Get local-dev-cluster with version '+local_dev_cluster_version)
-  shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
-  let parameterExport = "";
-  const prometheus_enable = core.getInput('prometheus_enable');
-  core.debug(prometheus_enable);
-  if (prometheus_enable !=undefined && prometheus_enable !=null && prometheus_enable.length !=0){
-    core.info('use prometheus enable '+prometheus_enable);
-    parameterExport = parameterExport+"export PROMETHEUS_ENABLE="+prometheus_enable;
-  }
-  const prometheus_operator_version = core.getInput('prometheus_operator_version');
-  core.debug(prometheus_operator_version);
-  if (prometheus_operator_version !=undefined && prometheus_operator_version !=null && prometheus_operator_version.length!=0){
-    core.info('use prometheus operator version '+prometheus_operator_version);
-    if (parameterExport!=""){
-      parameterExport=parameterExport+" && "
-    }
-    parameterExport=parameterExport+"export PROMETHEUS_OPERATOR_VERSION="+prometheus_operator_version;
-  }
-  const grafana_enable = core.getInput('grafana_enable');
-  core.debug(grafana_enable);
-  if (grafana_enable !==undefined && grafana_enable!=null && grafana_enable.length!=0){
-    core.info('use grafana enable '+grafana_enable);
-    if (parameterExport !=""){
-      parameterExport = parameterExport+" && "
-    }
-    parameterExport=parameterExport+"export GRAFANA_ENABLE="+grafana_enable;
-  }
-  if (parameterExport !=""){
-    parameterExport=parameterExport+" && "
-  }
-  core.debug(parameterExport);
-  shell.exec(parameterExport +" cd local-dev-cluster && bash -c './main.sh microshift_up'")
+  shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh ${arg}'`)
   return
 }
 
@@ -10267,12 +10240,12 @@ async function run() {
     if (runningBranch == 'kind') {
       bcc()
       kubectl()
-      return kind()
+      return setup()
     }
     if (runningBranch == 'microshift') {
       bcc()
       kubectl()
-      return microshift()
+      return setup()
     }
     core.error('runningBranch should in value of [bcc, kind, microshift]')
   } catch (error) {

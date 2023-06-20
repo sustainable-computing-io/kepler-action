@@ -3,8 +3,9 @@ on:
   pull_request:
   push:
     branches:
-      - main
-      - 'releases/*'
+      # - main
+      # - 'releases/*'
+      - add-microshift
 
 jobs:
   # unit tests
@@ -28,26 +29,34 @@ jobs:
         ./verify.sh bcc
 
   # test action works running from the graph
-  test_kind:
+  test_local_cluster:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [kind, microshift]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: kind
+        runningBranch: ${{matrix.platform}}
         local_dev_cluster_version: main
+        platform: ${{matrix.platform}}
     - name: verify
       run: |
         ./verify.sh cluster
 
   # test action works running from the graph
-  test_kind_with_specific_version:
+  test_local_cluster_with_prometheus_grafana:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [kind, microshift]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: kind
+        runningBranch: ${{matrix.platform}}
+        platform: ${{matrix.platform}}
         bcc_version: 0.25.0
         kubectl_version: 1.27.2
         local_dev_cluster_version: main
@@ -58,34 +67,4 @@ jobs:
     - name: verify
       run: |
         ./verify.sh cluster
-  
-  # test action works running from the graph
-  test_microshift:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ./
-      with:
-        runningBranch: microshift
-        local_dev_cluster_version: main
-    - name: verify
-      run: |
-        ./verify.sh cluster
-    
-  # test action works running from the graph
-  test_microshift_with_grafana_prometheus:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ./
-      with:
-        runningBranch: microshift
-        bcc_version: 0.25.0
-        kubectl_version: 1.27.2
-        local_dev_cluster_version: main
-        prometheus_enable: true
-        prometheus_operator_version: v0.12.0
-        grafana_enable: true
-    - name: verify
-      run: |
-        ./verify.sh cluster
+
