@@ -3,9 +3,8 @@ on:
   pull_request:
   push:
     branches:
-      # - main
-      # - 'releases/*'
-      - add-microshift
+      - main
+      - 'releases/*'
 
 jobs:
   # unit tests
