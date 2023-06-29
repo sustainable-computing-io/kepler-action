@@ -10163,35 +10163,30 @@ async function kubectl() {
 }
 
 async function setup() {
-  let platform = core.getInput('platform');
-  let arg="";
-  core.debug(platform);
-  if (platform == undefined || platform == null || platform.length ===0){
-    platform="kind";
-  }
-  if (platform === "kind"){
-    arg="kind_up";
-  }
-  if (platform === "microshift"){
-    arg="microshift_up";
+  let cluster_provider = core.getInput('cluster_provider');
+  core.debug(cluster_provider);
+  if (cluster_provider == undefined || cluster_provider == null || cluster_provider.length ===0){
+    cluster_provider="kind";
   }
   let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
   core.debug(local_dev_cluster_version);
   if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
-    local_dev_cluster_version="v0.0.0";
+    local_dev_cluster_version="main";
   }
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
   shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
   let parameterExport  = "";
-  if (platform === "kind"){
+  if (cluster_provider === "kind"){
     const kind_version = core.getInput('kind_version');
     core.debug(kind_version);
     if (kind_version !== undefined && kind_version!=null && kind_version.length!=0) {
         core.info(`use kind version `+kind_version);
       // kind_version, KIND_VERSION
         parameterExport = parameterExport + "export KIND_VERSION="+kind_version;
+        parameterExport = parameterExport + " && "
     }
   }
+  parameterExport = parameterExport + "export CLUSTER_PROVIDER="+cluster_provider;
   const prometheus_enable = core.getInput('prometheus_enable');
   core.debug(prometheus_enable);
   if (prometheus_enable !== undefined && prometheus_enable!=null && prometheus_enable.length!=0) {
@@ -10226,7 +10221,7 @@ async function setup() {
     parameterExport = parameterExport + " && "
   }
   core.debug(parameterExport);
-  shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh ${arg}'`)
+  shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`)
   return
 }
 
