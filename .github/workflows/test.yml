@@ -32,14 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [kind, microshift]
+        cluster_provider: [kind, microshift]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: ${{matrix.platform}}
+        runningBranch: ${{matrix.cluster_provider}}
         local_dev_cluster_version: main
-        platform: ${{matrix.platform}}
+        cluster_provider: ${{matrix.cluster_provider}}
     - name: verify
       run: |
         ./verify.sh cluster
@@ -49,13 +49,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [kind, microshift]
+        cluster_provider: [kind, microshift]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: ${{matrix.platform}}
-        platform: ${{matrix.platform}}
+        runningBranch: ${{matrix.cluster_provider}}
+        cluster_provider: ${{matrix.cluster_provider}}
         bcc_version: 0.25.0
         kubectl_version: 1.27.2
         local_dev_cluster_version: main
