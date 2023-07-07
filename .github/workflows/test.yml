@@ -38,7 +38,7 @@ jobs:
     - uses: ./
       with:
         runningBranch: ${{matrix.cluster_provider}}
-        local_dev_cluster_version: main
+        local_dev_cluster_version: v0.0.1
         cluster_provider: ${{matrix.cluster_provider}}
     - name: verify
       run: |
@@ -58,8 +58,8 @@ jobs:
         cluster_provider: ${{matrix.cluster_provider}}
         bcc_version: 0.25.0
         kubectl_version: 1.27.2
-        local_dev_cluster_version: main
-        kind_version: 0.19.0
+        local_dev_cluster_version: v0.0.1
+        kind_version: 0.20.0
         prometheus_enable: true
         prometheus_operator_version: v0.12.0
         grafana_enable: true
