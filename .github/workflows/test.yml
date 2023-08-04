@@ -16,16 +16,19 @@ jobs:
     # - run: npm test
 
   # test action works running from the graph
-  test_bcc:
+  test_ebpf:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ebpf_provider: [bcc, libbpf]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        runningBranch: bcc
+        ebpfprovider: ${{matrix.ebpf_provider}}
     - name: verify
       run: |
-        ./verify.sh bcc
+        ./verify.sh ${{matrix.ebpf_provider}}
 
   # test action works running from the graph
   test_local_cluster:
@@ -33,11 +36,13 @@ jobs:
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
+        ebpf_provider: [bcc, libbpf]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
-        local_dev_cluster_version: v0.0.3
+        ebpfprovider: ${{matrix.ebpf_provider}}
+        local_dev_cluster_version: v0.0.1
         cluster_provider: ${{matrix.cluster_provider}}
     - name: verify
       run: |
@@ -49,10 +54,12 @@ jobs:
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
+        ebpf_provider: [bcc, libbpf]
     steps:
     - uses: actions/checkout@v3
     - uses: ./
       with:
+        ebpfprovider: ${{matrix.ebpf_provider}}
         cluster_provider: ${{matrix.cluster_provider}}
         bcc_version: 0.25.0
         local_dev_cluster_version: v0.0.3
