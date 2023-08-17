@@ -10149,7 +10149,38 @@ async function bcc() {
   return
 }
 
-async function setup(cluster_provider) {
+async function libbpf() {
+  core.info(`Linux header`);
+  if (shell.exec("sudo apt-get install -y linux-headers-`uname -r`").code !== 0){
+    shell.echo("fail to install linux headers");
+    shell.exit(1);
+  }
+  core.info(`libbpf`);
+  if (shell.exec("sudo apt-get install -y libbpf-dev").code !== 0) {
+    shell.echo("fail to install libbpf related package");
+    shell.exit(1);
+  }
+}
+
+async function kubectl() {
+  let kubectl_version = core.getInput('kubectl_version');
+  core.debug(kubectl_version);
+  if (kubectl_version === undefined || kubectl_version == null || kubectl_version.length === 0) {
+    kubectl_version="1.25.4";
+  }
+  core.info(`Get kubectl with version `+ kubectl_version);
+  if (shell.exec("curl -LO https://dl.k8s.io/release/v"+kubectl_version+"/bin/linux/amd64/kubectl").code !== 0) {
+    shell.echo("fail to install kubectl");
+    shell.exit(1);
+  }
+}
+
+async function setup() {
+  let cluster_provider = core.getInput('cluster_provider');
+  core.debug(cluster_provider);
+  if (cluster_provider == undefined || cluster_provider == null || cluster_provider.length ===0){
+    cluster_provider="kind";
+  }
   let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
   core.debug(local_dev_cluster_version);
   if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
@@ -10190,19 +10221,22 @@ async function run() {
   const runningBranch = core.getInput('runningBranch');
   let cluster_provider = core.getInput('cluster_provider');
   core.debug(cluster_provider);
+  const ebpfprovider = core.getInput('ebpfprovider');
   try {
-    if (runningBranch == 'bcc') {
-      return bcc()
+    if (ebpfprovider == 'bcc') {
+      bcc()
+    }
+    if (ebpfprovider == 'libbpf') {
+      libbpf()
     }
     if (runningBranch == 'kind' || cluster_provider == 'kind') {
-      bcc()
-      return setup(cluster_provider)
+      kubectl()
+      return setup()
     }
     if (runningBranch == 'microshift' || cluster_provider == 'microshift') {
-      bcc()
-      return setup(cluster_provider)
+      kubectl()
+      return setup()
     }
-    core.error('runningBranch should in value of [bcc, kind, microshift], or use cluster_provider as [kind, microshift] for short')
   } catch (error) {
     core.setFailed(error.message);
   }

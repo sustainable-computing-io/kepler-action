@@ -35,6 +35,14 @@ function verify_bcc() {
     fi
 }
 
+function verify_libbpf() {
+    # basic check for libbpf
+    if [ $(dpkg -l | grep libbpf | wc -l) == 0 ]; then
+        echo "no libbpf package found"
+        exit 1
+    fi
+}
+
 function verify_cluster() {
     # basic check for k8s cluster info
     if [ $(kubectl cluster-info) !=0 ]; then
@@ -64,11 +72,14 @@ function main() {
     bcc)
         verify_bcc
         ;;
+    libbpf)
+        verify_libbpf
+        ;;
     cluster)
         verify_cluster
         ;;
     *)
-        verify_bcc
+        #verify_bcc
         verify_cluster
         ;;
     esac

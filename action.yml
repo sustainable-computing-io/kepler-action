@@ -3,7 +3,13 @@ description: 'kepler github action for set up cluster'
 inputs:
   runningBranch:  # id of input
     description: 'runningBranch for kepler CI'
-    required: true
+    required: false
+  ebpfprovider:
+    description: 'ebpf provider for kepler CI'
+    required: false
+  cluster_provider:
+    description: 'k8s cluster provider for kepler CI'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
