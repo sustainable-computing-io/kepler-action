@@ -1,10 +1,6 @@
 name: "units-test"
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - 'releases/*'
+  workflow_call:
 
 jobs:
   # unit tests
@@ -42,7 +38,7 @@ jobs:
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
-        local_dev_cluster_version: v0.0.1
+        local_dev_cluster_version: v0.0.3
         cluster_provider: ${{matrix.cluster_provider}}
     - name: verify
       run: |

@@ -1,0 +1,8 @@
+name: Scheduled build
+on:
+  schedule:
+    - cron: "30 8 * * *"
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
