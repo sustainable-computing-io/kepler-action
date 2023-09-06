@@ -7,7 +7,7 @@ jobs:
   units:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: npm ci
     # - run: npm test
 
@@ -18,7 +18,7 @@ jobs:
       matrix:
         ebpf_provider: [bcc, libbpf]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
@@ -34,7 +34,7 @@ jobs:
         cluster_provider: [kind, microshift]
         ebpf_provider: [bcc, libbpf]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
@@ -52,7 +52,7 @@ jobs:
         cluster_provider: [kind, microshift]
         ebpf_provider: [bcc, libbpf]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
