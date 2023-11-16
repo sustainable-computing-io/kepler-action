@@ -26,6 +26,18 @@ jobs:
       run: |
         ./verify.sh ${{matrix.ebpf_provider}}
 
+  test_xgboost:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./
+      with:
+        xgboost_version: 2.0.1
+        artifact_version: 0.26.0
+    - name: verify
+      run: |
+        ./verify.sh xgboost
+
   # test action works running from the graph
   test_local_cluster:
     runs-on: ubuntu-latest

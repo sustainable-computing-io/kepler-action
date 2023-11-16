@@ -10149,6 +10149,36 @@ async function bcc() {
   return
 }
 
+async function xgboost() {
+  let artifacts_version = core.getInput('artifacts_version');
+  core.debug(artifacts_version);
+  if (artifacts_version === undefined || artifacts_version == null || artifacts_version.length === 0) {
+    artifacts_version="0.26.0";
+  }
+  let xgboost_version = core.getInput('xgboost_version');
+  core.debug(xgboost_version);
+  if (xgboost_version === undefined || xgboost_version == null || xgboost_version.length === 0) {
+    xgboost_version="2.0.1";
+  }
+  core.info(`Get xgboost with version:` + xgboost_version);
+  if (shell.exec("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+artifacts_version+"/xgboost-"+xgboost_version+"-Linux.sh.tar.gz").code !==0){
+    shell.echo("fail to get xgboost pkg");
+    shell.exit(1);
+  }
+  if (shell.exec("tar -zxvf xgboost-"+xgboost_version+"-Linux.sh.tar.gz").code !== 0) {
+    shell.echo("fail to untar xgboost pkg");
+    shell.exit(1);
+  }
+  if (shell.exec("sudo sh xgboost-"+xgboost_version+"-Linux.sh --skip-license  --prefix=/usr/local").code !== 0) {
+    shell.echo("fail to install xgboost pkg");
+    shell.exit(1);
+  }
+  if (shell.exec("sudo ldconfig").code !== 0) {
+    shell.echo("fail to ldconfig");
+    shell.exit(1);
+  }
+}
+
 async function libbpf() {
   core.info(`Linux header`);
   if (shell.exec("sudo apt-get install -y linux-headers-`uname -r`").code !== 0){
@@ -10223,6 +10253,8 @@ async function run() {
   core.debug(cluster_provider);
   const ebpfprovider = core.getInput('ebpfprovider');
   try {
+    // always install xgboost
+    xgboost()
     if (ebpfprovider == 'bcc') {
       bcc()
     }

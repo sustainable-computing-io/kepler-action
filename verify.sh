@@ -43,6 +43,14 @@ function verify_libbpf() {
     fi
 }
 
+function verify_xgboost() {
+    # basic check for xgboost
+    if [ $(ldconfig -p |grep xgboost| wc -l) == 0 ]; then
+        echo "no xgboost package found"
+        exit 1
+    fi
+}
+
 function verify_cluster() {
     # basic check for k8s cluster info
     if [ $(kubectl cluster-info) !=0 ]; then
@@ -74,6 +82,9 @@ function main() {
         ;;
     libbpf)
         verify_libbpf
+        ;;
+    xgboost)
+        verify_xgboost
         ;;
     cluster)
         verify_cluster
