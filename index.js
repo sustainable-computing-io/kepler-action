@@ -1,154 +1,110 @@
 const core = require('@actions/core');
 const shell = require('shelljs');
 
-async function bcc() {
-  core.info(`Start to build env`);
-  core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-  core.info(`Linux header`);
-  if (shell.exec("sudo apt-get install -y linux-headers-`uname -r`").code !== 0){
-    shell.echo("fail to install linux headers");
+function getInputOrDefault(inputName, defaultValue) {
+  const input = core.getInput(inputName);
+  if (input === undefined || input == null || input.length === 0) {
+    return defaultValue;
+  }
+  return input;
+}
+
+function executeCommand(command, errorMessage) {
+  const result = shell.exec(command);
+  if (result.code !== 0) {
+    shell.echo(errorMessage);
     shell.exit(1);
   }
-  let bcc_version = core.getInput('bcc_version');
-  core.debug(bcc_version);
-  if (bcc_version === undefined || bcc_version == null || bcc_version.length === 0) {
-    bcc_version="0.25.0";
-  }
+}
+
+function installLinuxHeaders() {
+  core.info(`Linux header`);
+  executeCommand("sudo apt-get install -y linux-headers-`uname -r`", "fail to install linux headers");
+}
+
+function installBcc(bcc_version) {
   core.info(`Get BCC with version:` + bcc_version);
-  if (shell.exec("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+bcc_version+"/bcc_v"+bcc_version+".tar.gz").code !==0){
-    shell.echo("fail to get BCC deb");
-    shell.exit(1);
-  }
-  if (shell.exec("tar -zxvf bcc_v"+bcc_version+".tar.gz").code !== 0) {
-    shell.echo("fail to untar BCC deb");
-    shell.exit(1);
-  }
-  if (shell.exec("sudo dpkg -i libbcc_"+bcc_version+"-1_amd64.deb").code !== 0) {
-    shell.echo("fail to install BCC deb");
-    shell.exit(1);
-  }
-  return
+  executeCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+bcc_version+"/bcc_v"+bcc_version+".tar.gz", "fail to get BCC deb");
+  executeCommand("tar -zxvf bcc_v"+bcc_version+".tar.gz", "fail to untar BCC deb");
+  executeCommand("sudo dpkg -i libbcc_"+bcc_version+"-1_amd64.deb", "fail to install BCC deb");
 }
 
-async function xgboost() {
-  let artifacts_version = core.getInput('artifacts_version');
-  core.debug(artifacts_version);
-  if (artifacts_version === undefined || artifacts_version == null || artifacts_version.length === 0) {
-    artifacts_version="0.26.0";
-  }
-  let xgboost_version = core.getInput('xgboost_version');
-  core.debug(xgboost_version);
-  if (xgboost_version === undefined || xgboost_version == null || xgboost_version.length === 0) {
-    xgboost_version="2.0.1";
-  }
+function installXgboost(artifacts_version, xgboost_version) {
   core.info(`Get xgboost with version:` + xgboost_version);
-  if (shell.exec("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+artifacts_version+"/xgboost-"+xgboost_version+"-Linux.sh.tar.gz").code !==0){
-    shell.echo("fail to get xgboost pkg");
-    shell.exit(1);
-  }
-  if (shell.exec("tar -zxvf xgboost-"+xgboost_version+"-Linux.sh.tar.gz").code !== 0) {
-    shell.echo("fail to untar xgboost pkg");
-    shell.exit(1);
-  }
-  if (shell.exec("sudo sh xgboost-"+xgboost_version+"-Linux.sh --skip-license  --prefix=/usr/local").code !== 0) {
-    shell.echo("fail to install xgboost pkg");
-    shell.exit(1);
-  }
-  if (shell.exec("sudo ldconfig").code !== 0) {
-    shell.echo("fail to ldconfig");
-    shell.exit(1);
-  }
+  executeCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+artifacts_version+"/xgboost-"+xgboost_version+"-Linux.sh.tar.gz", "fail to get xgboost pkg");
+  executeCommand("tar -zxvf xgboost-"+xgboost_version+"-Linux.sh.tar.gz", "fail to untar xgboost pkg");
+  executeCommand("sudo sh xgboost-"+xgboost_version+"-Linux.sh --skip-license  --prefix=/usr/local", "fail to install xgboost pkg");
+  executeCommand("sudo ldconfig", "fail to ldconfig");
 }
 
-async function libbpf() {
-  core.info(`Linux header`);
-  if (shell.exec("sudo apt-get install -y linux-headers-`uname -r`").code !== 0){
-    shell.echo("fail to install linux headers");
-    shell.exit(1);
-  }
+function installLibbpf() {
   core.info(`libbpf`);
-  if (shell.exec("sudo apt-get install -y libbpf-dev").code !== 0) {
-    shell.echo("fail to install libbpf related package");
-    shell.exit(1);
-  }
+  executeCommand("sudo apt-get install -y libbpf-dev", "fail to install libbpf related package");
 }
 
-async function kubectl() {
-  let kubectl_version = core.getInput('kubectl_version');
-  core.debug(kubectl_version);
-  if (kubectl_version === undefined || kubectl_version == null || kubectl_version.length === 0) {
-    kubectl_version="1.25.4";
-  }
+function installKubectl(kubectl_version) {
   core.info(`Get kubectl with version `+ kubectl_version);
-  if (shell.exec("curl -LO https://dl.k8s.io/release/v"+kubectl_version+"/bin/linux/amd64/kubectl").code !== 0) {
-    shell.echo("fail to install kubectl");
-    shell.exit(1);
-  }
+  executeCommand("curl -LO https://dl.k8s.io/release/v"+kubectl_version+"/bin/linux/amd64/kubectl", "fail to install kubectl");
 }
 
 async function setup() {
-  let cluster_provider = core.getInput('cluster_provider');
-  core.debug(cluster_provider);
-  if (cluster_provider == undefined || cluster_provider == null || cluster_provider.length ===0){
-    cluster_provider="kind";
-  }
-  let local_dev_cluster_version = core.getInput('local_dev_cluster_version');
-  core.debug(local_dev_cluster_version);
-  if (local_dev_cluster_version === undefined || local_dev_cluster_version == null || local_dev_cluster_version.length === 0) {
-    local_dev_cluster_version="main";
-  }
+  const cluster_provider = getInputOrDefault('cluster_provider', 'kind');
+  const local_dev_cluster_version = getInputOrDefault('local_dev_cluster_version', 'main');
+  const prometheus_enable = getInputOrDefault('prometheus_enable', '');
+  const prometheus_operator_version = getInputOrDefault('prometheus_operator_version', '');
+  const grafana_enable = getInputOrDefault('grafana_enable', '');
+
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
   shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+
   let parameterExport = "export CLUSTER_PROVIDER="+cluster_provider;
-  const prometheus_enable = core.getInput('prometheus_enable');
-  core.debug(prometheus_enable);
-  if (prometheus_enable !== undefined && prometheus_enable!=null && prometheus_enable.length!=0) {
+
+  if (prometheus_enable.length !== 0) {
     core.info(`use prometheus enable `+prometheus_enable);
-    //  prometheus_enable, PROMETHEUS_ENABLE
     parameterExport = parameterExport + " && export PROMETHEUS_ENABLE="+prometheus_enable;
   }
-  const prometheus_operator_version = core.getInput('prometheus_operator_version');
-  core.debug(prometheus_operator_version);
-  if (prometheus_operator_version !== undefined && prometheus_operator_version!=null && prometheus_operator_version.length!=0) {
+  if (prometheus_operator_version.length !== 0) {
     core.info(`use prometheus operator version `+prometheus_operator_version);
-    //  prometheus_operator_version, PROMETHEUS_OPERATOR_VERSION
     parameterExport = parameterExport + " && export PROMETHEUS_OPERATOR_VERSION="+prometheus_operator_version;
   }
-  const grafana_enable = core.getInput('grafana_enable');
-  core.debug(grafana_enable);
-  if (grafana_enable !== undefined && grafana_enable!=null && grafana_enable.length!=0) {
+  if (grafana_enable.length !== 0) {
     core.info(`use grafana enable `+grafana_enable);
-    //   grafana_enable, GRAFANA_ENABLE
     parameterExport = parameterExport + " && export GRAFANA_ENABLE="+grafana_enable;
   }
+
   parameterExport = parameterExport + " && "
   core.debug(parameterExport);
   shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`)
-  return
 }
 
-// most @actions toolkit packages have async methods
 async function run() {
-  const runningBranch = core.getInput('runningBranch');
-  let cluster_provider = core.getInput('cluster_provider');
-  core.debug(cluster_provider);
-  const ebpfprovider = core.getInput('ebpfprovider');
+  const runningBranch = getInputOrDefault('runningBranch', '');
+  const ebpfprovider = getInputOrDefault('ebpfprovider', '');
+
   try {
     // always install xgboost
-    xgboost()
+    const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
+    const xgboost_version = getInputOrDefault('xgboost_version', '2.0.1');
+    installXgboost(artifacts_version, xgboost_version);
+
     if (ebpfprovider == 'bcc') {
-      bcc()
+      installLinuxHeaders();
+      const bcc_version = getInputOrDefault('bcc_version', '0.25.0');
+      installBcc(bcc_version);
     }
     if (ebpfprovider == 'libbpf') {
-      libbpf()
+      installLinuxHeaders();
+      installLibbpf();
     }
-    if (runningBranch == 'kind' || cluster_provider == 'kind') {
-      kubectl()
-      return setup()
+    if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', 'kind') == 'kind') {
+      const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
+      installKubectl(kubectl_version);
+      await setup();
     }
-    if (runningBranch == 'microshift' || cluster_provider == 'microshift') {
-      kubectl()
-      return setup()
+    if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', 'kind') == 'microshift') {
+      const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
+      installKubectl(kubectl_version);
+      await setup();
     }
   } catch (error) {
     core.setFailed(error.message);
