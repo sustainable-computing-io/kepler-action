@@ -10201,7 +10201,6 @@ async function run() {
   const ebpfprovider = getInputOrDefault('ebpfprovider', '');
 
   try {
-    // always install xgboost
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
     const xgboost_version = getInputOrDefault('xgboost_version', '');
     // if xgboost_version is empty, skip xgboost installation
