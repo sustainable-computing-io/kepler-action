@@ -13,7 +13,7 @@ function executeCommand(command, errorMessage) {
   const result = shell.exec(command);
   if (result.code !== 0) {
     shell.echo(errorMessage);
-    shell.exit(1);
+    shell.exit(result.code);
   }
 }
 
@@ -55,7 +55,7 @@ async function setup() {
   const grafana_enable = getInputOrDefault('grafana_enable', '');
 
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
-  shell.exec("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1");
+  executeCommand("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
 
   let parameterExport = "export CLUSTER_PROVIDER="+cluster_provider;
 
@@ -74,7 +74,7 @@ async function setup() {
 
   parameterExport = parameterExport + " && "
   core.debug(parameterExport);
-  shell.exec(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`)
+  executeCommand(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`, "fail to setup local-dev-cluster")
 }
 
 async function run() {
@@ -82,10 +82,14 @@ async function run() {
   const ebpfprovider = getInputOrDefault('ebpfprovider', '');
 
   try {
-    // always install xgboost
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
-    const xgboost_version = getInputOrDefault('xgboost_version', '2.0.1');
-    installXgboost(artifacts_version, xgboost_version);
+    const xgboost_version = getInputOrDefault('xgboost_version', '');
+    // if xgboost_version is empty, skip xgboost installation
+    if (xgboost_version.length === 0) {
+      core.info(`xgboost_version is empty, skip xgboost installation`);
+    } else {
+      installXgboost(artifacts_version, xgboost_version);
+    }
 
     if (ebpfprovider == 'bcc') {
       installLinuxHeaders();
