@@ -36,10 +36,13 @@ function verify_bcc() {
 }
 
 function verify_libbpf() {
-    # basic check for libbpf
-    if [ $(dpkg -l | grep libbpf | wc -l) == 0 ]; then
-        echo "no libbpf package found"
-        exit 1
+    if ! [ -f /usr/lib64/libbpf.a ]; then
+      echo "archive file libbpf.a does not exist.";
+      exit 1
+    fi
+    if ! [ -f /usr/include/bpf/libbpf.h ]; then
+      echo "header file libbpf.h does not exist.";
+      exit 1
     fi
 }
 
