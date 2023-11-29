@@ -37,9 +37,14 @@ function installXgboost(artifacts_version, xgboost_version) {
   executeCommand("sudo ldconfig", "fail to ldconfig");
 }
 
-function installLibbpf() {
-  core.info(`libbpf`);
-  executeCommand("sudo apt-get install -y libbpf-dev", "fail to install libbpf related package");
+function installLibbpf(libbpf_version) {
+  core.info(`installing libbpf version ` + libbpf_version + ` from source`);
+  executeCommand("sudo apt install libelf-dev", "failed to install libelf-dev");
+  executeCommand("mkdir -p temp-libbpf");
+  executeCommand("cd temp-libbpf && git clone -b " + libbpf_version + " https://github.com/libbpf/libbpf");
+  executeCommand("cd temp-libbpf/libbpf/src && sudo BUILD_STATIC_ONLY=y make install", "failed to install libbpf archive library");
+  executeCommand("cd temp-libbpf/libbpf/src && sudo make install_uapi_headers", "failed to install libbpf headers");
+  executeCommand("sudo rm -rf temp-libbpf");
 }
 
 function installKubectl(kubectl_version) {
@@ -84,6 +89,7 @@ async function run() {
   try {
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
     const xgboost_version = getInputOrDefault('xgboost_version', '');
+	const libbpf_version = getInputOrDefault('libbpf_version', 'v1.2.0');
     // if xgboost_version is empty, skip xgboost installation
     if (xgboost_version.length === 0) {
       core.info(`xgboost_version is empty, skip xgboost installation`);
@@ -98,7 +104,7 @@ async function run() {
     }
     if (ebpfprovider == 'libbpf') {
       installLinuxHeaders();
-      installLibbpf();
+      installLibbpf(libbpf_version);
     }
     if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', 'kind') == 'kind') {
       const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
