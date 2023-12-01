@@ -10225,12 +10225,12 @@ async function run() {
       installLinuxHeaders();
       installLibbpf(libbpf_version);
     }
-    if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', 'kind') == 'kind') {
+    if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', '') == 'kind') {
       const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
       installKubectl(kubectl_version);
       await setup();
     }
-    if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', 'kind') == 'microshift') {
+    if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
       const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
       installKubectl(kubectl_version);
       await setup();

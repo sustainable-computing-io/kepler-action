@@ -44,6 +44,8 @@ function verify_libbpf() {
       echo "header file libbpf.h does not exist.";
       exit 1
     fi
+    sudo apt-get install -y mlocate
+    locate libbpf
 }
 
 function verify_xgboost() {
