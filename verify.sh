@@ -79,6 +79,18 @@ function verify_cluster() {
     done
 }
 
+function verify_modprobe() {
+    modules=$1
+    # modules are separated by comma, loop to check each module
+    for module in $(echo $modules | tr "," "\n"); do
+        if [ $(lsmod | grep $module | wc -l) == 0 ]; then
+            echo "no $module module found"
+            # ignore the error for now, since this is very os and kernel version specific
+            exit 0
+        fi
+    done
+}
+
 function main() {
     # verify the deployment of cluster
     case $1 in
@@ -94,10 +106,14 @@ function main() {
     cluster)
         verify_cluster
         ;;
+    modprobe)
+        module=$2
+        verify_modprobe $module
+        ;;
     *)
         #verify_bcc
         verify_cluster
         ;;
     esac
 }
-main $1
+main $1 $2

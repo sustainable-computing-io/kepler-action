@@ -78,3 +78,14 @@ jobs:
       run: |
         ./verify.sh cluster
 
+  # test if kernel module can be loaded, this is very os and instance specific, ignore if it fails
+  test_kernel_module:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./
+      with:
+        kernel_module_names: rapl,intel_rapl_common
+    - name: verify
+      run: |
+        ./verify.sh modprobe rapl,intel_rapl_common

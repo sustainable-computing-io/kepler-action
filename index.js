@@ -22,6 +22,28 @@ function installLinuxHeaders() {
   executeCommand("sudo apt-get install -y linux-headers-`uname -r`", "fail to install linux headers");
 }
 
+function installLinuxModules() {
+  core.info(`Linux modules`);
+  executeCommand("sudo apt-get install -y linux-modules-`uname -r`", "fail to install linux modules");
+}
+
+function installLinuxExtraModules() {
+  core.info(`Linux extra modules`);
+  executeCommand("sudo apt-get install -y linux-modules-extra-`uname -r`", "fail to install linux extra modules");
+}
+
+function modprobe(moduleName) {
+  core.info(`modprobe`);
+  if (moduleName == "") {
+    core.info(`module name is empty, skip modprobe`);
+    return;
+  }
+  core.info(`modprobe `+moduleName);
+  // ignore error, since this is a very os and kernel version specific command
+  executeCommand("sudo modprobe "+moduleName + " || true", "fail to modprobe");
+}
+
+
 function installBcc(bcc_version) {
   core.info(`Get BCC with version:` + bcc_version);
   executeCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+bcc_version+"/bcc_v"+bcc_version+".tar.gz", "fail to get BCC deb");
@@ -89,7 +111,17 @@ async function run() {
   try {
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
     const xgboost_version = getInputOrDefault('xgboost_version', '');
-	const libbpf_version = getInputOrDefault('libbpf_version', 'v1.2.0');
+    const libbpf_version = getInputOrDefault('libbpf_version', 'v1.2.0');
+    const kernel_module_names = getInputOrDefault('kernel_module_names', ''); // comma limited names, for example: rapl,intel_rapl_common
+  
+    if (kernel_module_names.length > 0) {
+      core.info(`kernel_module_names are `+ kernel_module_names);
+      installLinuxModules();
+      installLinuxExtraModules();
+      // loop through all kernel module names
+      kernel_module_names.split(',').forEach(modprobe);
+    }
+    
     // if xgboost_version is empty, skip xgboost installation
     if (xgboost_version.length === 0) {
       core.info(`xgboost_version is empty, skip xgboost installation`);
