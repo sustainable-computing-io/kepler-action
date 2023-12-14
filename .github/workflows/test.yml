@@ -41,6 +41,8 @@ jobs:
   # test action works running from the graph
   test_local_cluster:
     runs-on: ubuntu-latest
+    env:
+      KERNEL_MODULE_NAMES: "rapl,intel_rapl_common,intel_rapl_msr"
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
@@ -85,7 +87,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ./
       with:
-        kernel_module_names: rapl,intel_rapl_common
+        kernel_module_names: ${{ env.KERNEL_MODULE_NAMES }}}
     - name: verify
       run: |
-        ./verify.sh modprobe rapl,intel_rapl_common
+        ./verify.sh modprobe ${{ env.KERNEL_MODULE_NAMES }}

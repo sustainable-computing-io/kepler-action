@@ -112,7 +112,7 @@ async function run() {
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
     const xgboost_version = getInputOrDefault('xgboost_version', '');
     const libbpf_version = getInputOrDefault('libbpf_version', 'v1.2.0');
-    const kernel_module_names = getInputOrDefault('kernel_module_names', ''); // comma limited names, for example: rapl,intel_rapl_common
+    const kernel_module_names = getInputOrDefault('kernel_module_names', ''); // comma delimited names, for example: rapl,intel_rapl_common
   
     if (kernel_module_names.length > 0) {
       core.info(`kernel_module_names are `+ kernel_module_names);
