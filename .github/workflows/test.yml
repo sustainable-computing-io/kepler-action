@@ -41,6 +41,8 @@ jobs:
   # test action works running from the graph
   test_local_cluster:
     runs-on: ubuntu-latest
+    env:
+      KERNEL_MODULE_NAMES: "rapl,intel_rapl_common,intel_rapl_msr"
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
@@ -78,3 +80,14 @@ jobs:
       run: |
         ./verify.sh cluster
 
+  # test if kernel module can be loaded, this is very os and instance specific, ignore if it fails
+  test_kernel_module:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./
+      with:
+        kernel_module_names: ${{ env.KERNEL_MODULE_NAMES }}}
+    - name: verify
+      run: |
+        ./verify.sh modprobe ${{ env.KERNEL_MODULE_NAMES }}
