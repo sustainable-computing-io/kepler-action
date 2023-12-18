@@ -10,6 +10,9 @@ inputs:
   cluster_provider:
     description: 'k8s cluster provider for kepler CI'
     required: false
+  kernel_module_names:
+    description: 'comma delimited kernel module names to install for kepler CI, e.g. rapl,intel_rapl_msr'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
