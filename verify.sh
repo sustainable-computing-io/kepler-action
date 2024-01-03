@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of the Kepler project
 #
@@ -16,104 +16,125 @@
 #
 # Copyright 2023 The Kepler Contributors
 #
-set -x
+set -eu -o pipefail
 
-NAMESPACE=${NAMESPACE-"monitoring"}
+declare -r MONITORING_NS=${MONITORING_NS-monitoring}
 
-function rollout_status() {
-    kubectl rollout status $1 --namespace $2 --timeout=5m || {
-        echo "fail to check status of ${1} inside namespace ${2}"
-        exit 1
-    }
+rollout_status() {
+	local res="$1"
+	local ns="$2"
+	shift 2
+	kubectl rollout status "$res" --namespace "$ns" --timeout=5m || {
+		echo "fail to check status of $res inside namespace $ns"
+		return 1
+	}
+	echo "$res in $ns namespace rolled out successfully"
+	return 0
 }
 
-function verify_bcc() {
-    # basic check for bcc
-    if [ $(dpkg -l | grep bcc | wc -l) == 0 ]; then
-        echo "no bcc package found"
-        exit 1
-    fi
+verify_bcc() {
+	# basic check for bcc
+	[[ $(dpkg -l | grep -c bcc) == 0 ]] && {
+		echo "no bcc package found"
+		return 1
+	}
+	echo "bcc check passed"
+	return 0
 }
 
-function verify_libbpf() {
-    if ! [ -f /usr/lib64/libbpf.a ]; then
-      echo "archive file libbpf.a does not exist.";
-      exit 1
-    fi
-    if ! [ -f /usr/include/bpf/libbpf.h ]; then
-      echo "header file libbpf.h does not exist.";
-      exit 1
-    fi
-    sudo apt-get install -y mlocate
-    locate libbpf
+verify_libbpf() {
+	[[ ! -f /usr/lib64/libbpf.a ]] && {
+		echo "archive file libbpf.a does not exist."
+		return 1
+	}
+	[[ ! -f /usr/include/bpf/libbpf.h ]] && {
+		echo "header file libbpf.h does not exist."
+		return 1
+	}
+	[[ $(locate libbpf) ]] || {
+		echo "couldnot locate libbpf related files"
+		return 1
+	}
+	echo "libbpf check passed"
+	return 0
 }
 
-function verify_xgboost() {
-    # basic check for xgboost
-    if [ $(ldconfig -p |grep xgboost| wc -l) == 0 ]; then
-        echo "no xgboost package found"
-        exit 1
-    fi
+verify_xgboost() {
+	# basic check for xgboost
+	[[ $(ldconfig -p | grep -c xgboost) == 0 ]] && {
+		echo "no xgboost package found"
+		return 1
+	}
+	echo "xgboost check passed"
+	return 0
 }
 
-function verify_cluster() {
-    # basic check for k8s cluster info
-    if [ $(kubectl cluster-info) !=0 ]; then
-        echo "fail to get the cluster-info"
-        exit 1
-    fi
+verify_cluster() {
+	# basic check for k8s cluster info
 
-    # check k8s system pod is there...
-    if [ $(kubectl get pods --all-namespaces | wc -l) == 0 ]; then
-        echo "it seems k8s cluster is not started"
-        exit 1
-    fi
+	[[ $(kubectl cluster-info) ]] || {
+		echo "fail to get the cluster-info"
+		return 1
+	}
 
-    # check rollout status
-    resources=$(
-        kubectl get deployments --namespace=$NAMESPACE -o name
-        kubectl get statefulsets --namespace=$NAMESPACE -o name
-    )
-    for res in $resources; do
-        rollout_status $res $NAMESPACE
-    done
+	# check k8s system pod is there...
+	[[ $(kubectl get pods --all-namespaces | wc -l) == 0 ]] && {
+		echo "it seems k8s cluster is not started"
+		return 1
+	}
+
+	# check rollout status
+	resources=$(
+		kubectl get deployments --namespace="$MONITORING_NS" -o name
+		kubectl get statefulsets --namespace="$MONITORING_NS" -o name
+	)
+	for res in $resources; do
+		rollout_status "$res" "$MONITORING_NS"
+	done
+	echo "cluster check passed"
+	return 0
 }
 
-function verify_modprobe() {
-    modules=$1
-    # modules are separated by comma, loop to check each module
-    for module in $(echo $modules | tr "," "\n"); do
-        if [ $(lsmod | grep $module | wc -l) == 0 ]; then
-            echo "no $module module found"
-            # ignore the error for now, since this is very os and kernel version specific
-            exit 0
-        fi
-    done
+verify_modprobe() {
+	local modules="$1"
+	shift 1
+
+	# modules are separated by comma, loop to check each module
+	for module in $(echo "$modules" | tr "," "\n"); do
+		[[ $(lsmod | grep -c "$module") == 0 ]] && {
+			echo "no $module module found"
+			# ignore the error for now, since this is very os and kernel version specific
+			return 0
+		}
+		echo "$module check passed"
+	done
 }
 
-function main() {
-    # verify the deployment of cluster
-    case $1 in
-    bcc)
-        verify_bcc
-        ;;
-    libbpf)
-        verify_libbpf
-        ;;
-    xgboost)
-        verify_xgboost
-        ;;
-    cluster)
-        verify_cluster
-        ;;
-    modprobe)
-        module=$2
-        verify_modprobe $module
-        ;;
-    *)
-        #verify_bcc
-        verify_cluster
-        ;;
-    esac
+main() {
+	local type="$1"
+	local module="${2:-}"
+	shift 2 || true
+
+	# verify the deployment of cluster
+	case $type in
+	bcc)
+		verify_bcc
+		;;
+	libbpf)
+		verify_libbpf
+		;;
+	xgboost)
+		verify_xgboost
+		;;
+	cluster)
+		verify_cluster
+		;;
+	modprobe)
+		verify_modprobe "$module"
+		;;
+	*)
+		verify_cluster
+		;;
+	esac
 }
-main $1 $2
+main "$@"

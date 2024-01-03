@@ -18,6 +18,8 @@ jobs:
       matrix:
         ebpf_provider: [bcc, libbpf]
     steps:
+    - name: Install mlocate
+      run: sudo apt-get install -y mlocate
     - uses: actions/checkout@v4
     - uses: ./
       with:
@@ -41,8 +43,6 @@ jobs:
   # test action works running from the graph
   test_local_cluster:
     runs-on: ubuntu-latest
-    env:
-      KERNEL_MODULE_NAMES: "rapl,intel_rapl_common,intel_rapl_msr"
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
@@ -83,6 +83,8 @@ jobs:
   # test if kernel module can be loaded, this is very os and instance specific, ignore if it fails
   test_kernel_module:
     runs-on: ubuntu-latest
+    env:
+      KERNEL_MODULE_NAMES: "rapl,intel_rapl_common,intel_rapl_msr"
     steps:
     - uses: actions/checkout@v4
     - uses: ./
