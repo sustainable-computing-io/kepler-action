@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ebpf_provider: [bcc, libbpf]
+        ebpf_provider: [libbpf]
     steps:
     - name: Install mlocate
       run: sudo apt-get install -y mlocate
@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
-        ebpf_provider: [bcc, libbpf]
+        ebpf_provider: [libbpf]
     steps:
     - uses: actions/checkout@v4
     - uses: ./
@@ -64,14 +64,13 @@ jobs:
     strategy:
       matrix:
         cluster_provider: [kind, microshift]
-        ebpf_provider: [bcc, libbpf]
+        ebpf_provider: [libbpf]
     steps:
     - uses: actions/checkout@v4
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
         cluster_provider: ${{matrix.cluster_provider}}
-        bcc_version: 0.25.0
         local_dev_cluster_version: v0.0.3
         prometheus_enable: true
         prometheus_operator_version: v0.12.0

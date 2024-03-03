@@ -43,14 +43,6 @@ function modprobe(moduleName) {
   executeCommand("sudo modprobe "+moduleName + " || true", "fail to modprobe");
 }
 
-
-function installBcc(bcc_version) {
-  core.info(`Get BCC with version:` + bcc_version);
-  executeCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+bcc_version+"/bcc_v"+bcc_version+".tar.gz", "fail to get BCC deb");
-  executeCommand("tar -zxvf bcc_v"+bcc_version+".tar.gz", "fail to untar BCC deb");
-  executeCommand("sudo dpkg -i libbcc_"+bcc_version+"-1_amd64.deb", "fail to install BCC deb");
-}
-
 function installXgboost(artifacts_version, xgboost_version) {
   core.info(`Get xgboost with version:` + xgboost_version);
   executeCommand("wget https://github.com/sustainable-computing-io/kepler-ci-artifacts/releases/download/v"+artifacts_version+"/xgboost-"+xgboost_version+"-Linux.sh.tar.gz", "fail to get xgboost pkg");
@@ -127,12 +119,6 @@ async function run() {
       core.info(`xgboost_version is empty, skip xgboost installation`);
     } else {
       installXgboost(artifacts_version, xgboost_version);
-    }
-
-    if (ebpfprovider == 'bcc') {
-      installLinuxHeaders();
-      const bcc_version = getInputOrDefault('bcc_version', '0.25.0');
-      installBcc(bcc_version);
     }
     if (ebpfprovider == 'libbpf') {
       installLinuxHeaders();

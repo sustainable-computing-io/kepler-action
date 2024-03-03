@@ -32,16 +32,6 @@ rollout_status() {
 	return 0
 }
 
-verify_bcc() {
-	# basic check for bcc
-	[[ $(dpkg -l | grep -c bcc) == 0 ]] && {
-		echo "no bcc package found"
-		return 1
-	}
-	echo "bcc check passed"
-	return 0
-}
-
 verify_libbpf() {
 	[[ ! -f /usr/lib64/libbpf.a ]] && {
 		echo "archive file libbpf.a does not exist."
@@ -117,9 +107,6 @@ main() {
 
 	# verify the deployment of cluster
 	case $type in
-	bcc)
-		verify_bcc
-		;;
 	libbpf)
 		verify_libbpf
 		;;
