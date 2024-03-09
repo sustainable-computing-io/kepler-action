@@ -10183,6 +10183,19 @@ function installLibbpf(libbpf_version) {
 function installKubectl(kubectl_version) {
   core.info(`Get kubectl with version `+ kubectl_version);
   executeCommand("curl -LO https://dl.k8s.io/release/v"+kubectl_version+"/bin/linux/amd64/kubectl", "fail to install kubectl");
+  executeCommand("chmod +x ./kubectl");
+  executeCommand("mv ./kubectl /usr/local/bin/kubectl");
+  core.info(`Get kustomize`);
+  executeCommand("curl -s \"https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh\" | bash");
+  executeCommand("chmod +x kustomize");
+  executeCommand("mv kustomize /usr/local/bin/");
+}
+
+function installKind() {
+  core.info(`Get Kind with latest version`);
+  executeCommand("curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64","fail to install kind");
+  executeCommand("chmod +x ./kind");
+  executeCommand("mv ./kind /usr/local/bin/kind");
 }
 
 async function setup() {
@@ -10246,6 +10259,7 @@ async function run() {
     if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', '') == 'kind') {
       const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
       installKubectl(kubectl_version);
+      installKind()
       await setup();
     }
     if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
