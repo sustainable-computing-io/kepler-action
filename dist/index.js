@@ -10224,7 +10224,7 @@ async function setup() {
     parameterExport = parameterExport + " && export GRAFANA_ENABLE="+grafana_enable;
   }
   if (tekton_enable.length !==0) {
-    core.info(`use grafana enable `+tekton_enable);
+    core.info(`use tekton enable `+tekton_enable);
     parameterExport = parameterExport + " && export TEKTON_ENABLE="+tekton_enable;
   }
 
