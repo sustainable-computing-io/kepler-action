@@ -52,7 +52,7 @@ jobs:
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
-        local_dev_cluster_version: v0.0.3
+        local_dev_cluster_version: v0.0.4
         cluster_provider: ${{matrix.cluster_provider}}
     - name: verify
       run: |
@@ -62,19 +62,56 @@ jobs:
   test_local_cluster_with_prometheus_grafana:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        cluster_provider: [kind, microshift]
-        ebpf_provider: [libbpf]
+        include:
+        - cluster_provider: kind
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: false
+          GRAFANA_ENABLE: false
+          TEKTON_ENABLE: false
+        - cluster_provider: kind
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: true
+          GRAFANA_ENABLE: true
+          TEKTON_ENABLE: false
+        - cluster_provider: kind
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: false
+          GRAFANA_ENABLE: false
+          TEKTON_ENABLE: true
+        - cluster_provider: kind
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: true
+          GRAFANA_ENABLE: true
+          TEKTON_ENABLE: true
+        - cluster_provider: microshift
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: false
+          GRAFANA_ENABLE: false
+          TEKTON_ENABLE: false
+        - cluster_provider: microshift
+          ebpf_provider: libbpf
+          prometheus_operator_version: v0.12.0
+          PROMETHEUS_ENABLE: true
+          GRAFANA_ENABLE: true
+          TEKTON_ENABLE: false
     steps:
     - uses: actions/checkout@v4
     - uses: ./
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
         cluster_provider: ${{matrix.cluster_provider}}
-        local_dev_cluster_version: v0.0.3
-        prometheus_enable: true
+        local_dev_cluster_version: v0.0.4
+        prometheus_enable: ${{matrix.PROMETHEUS_ENABLE}}
         prometheus_operator_version: v0.12.0
-        grafana_enable: true
+        grafana_enable: ${{matrix.GRAFANA_ENABLE}}
+        tekton_enable: ${{matrix.TEKTON_ENABLE}}
     - name: verify
       run: |
         ./verify.sh cluster

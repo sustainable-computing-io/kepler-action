@@ -10204,6 +10204,7 @@ async function setup() {
   const prometheus_enable = getInputOrDefault('prometheus_enable', '');
   const prometheus_operator_version = getInputOrDefault('prometheus_operator_version', '');
   const grafana_enable = getInputOrDefault('grafana_enable', '');
+  const tekton_enable = getInputOrDefault('tekton_enable', '');
 
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
   executeCommand("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
@@ -10221,6 +10222,10 @@ async function setup() {
   if (grafana_enable.length !== 0) {
     core.info(`use grafana enable `+grafana_enable);
     parameterExport = parameterExport + " && export GRAFANA_ENABLE="+grafana_enable;
+  }
+  if (tekton_enable.length !==0) {
+    core.info(`use grafana enable `+tekton_enable);
+    parameterExport = parameterExport + " && export TEKTON_ENABLE="+tekton_enable;
   }
 
   parameterExport = parameterExport + " && "
