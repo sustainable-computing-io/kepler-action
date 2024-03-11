@@ -60,6 +60,10 @@ verify_xgboost() {
 }
 
 verify_cluster() {
+	# basic command check
+	which kubectl
+	which kustomize
+	
 	# basic check for k8s cluster info
 
 	[[ $(kubectl cluster-info) ]] || {
