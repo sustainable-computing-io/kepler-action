@@ -53,7 +53,7 @@ function installXgboost(artifacts_version, xgboost_version) {
 
 function installLibbpf(libbpf_version) {
   core.info(`installing libbpf version ` + libbpf_version + ` from source`);
-  executeCommand("sudo apt install libelf-dev", "failed to install libelf-dev");
+  executeCommand("sudo apt-get install -y libelf-dev", "failed to install libelf-dev");
   executeCommand("mkdir -p temp-libbpf");
   executeCommand("cd temp-libbpf && git clone -b " + libbpf_version + " https://github.com/libbpf/libbpf");
   executeCommand("cd temp-libbpf/libbpf/src && sudo BUILD_STATIC_ONLY=y make install", "failed to install libbpf archive library");
