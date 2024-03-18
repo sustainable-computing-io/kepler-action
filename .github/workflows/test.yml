@@ -44,24 +44,6 @@ jobs:
   test_local_cluster:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        cluster_provider: [kind, microshift]
-        ebpf_provider: [libbpf]
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./
-      with:
-        ebpfprovider: ${{matrix.ebpf_provider}}
-        local_dev_cluster_version: v0.0.4
-        cluster_provider: ${{matrix.cluster_provider}}
-    - name: verify
-      run: |
-        ./verify.sh cluster
-
-  # test action works running from the graph
-  test_local_cluster_with_prometheus_grafana:
-    runs-on: ubuntu-latest
-    strategy:
       fail-fast: false
       matrix:
         include:
@@ -71,39 +53,46 @@ jobs:
           PROMETHEUS_ENABLE: false
           GRAFANA_ENABLE: false
           TEKTON_ENABLE: false
+          test_name: kind_libbpf
         - cluster_provider: kind
           ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: true
           GRAFANA_ENABLE: true
           TEKTON_ENABLE: false
+          test_name: kind_libbpf_with_prometheus
         - cluster_provider: kind
           ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: false
           GRAFANA_ENABLE: false
           TEKTON_ENABLE: true
+          test_name: kind_libbpf_with_tekton
         - cluster_provider: kind
           ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: true
           GRAFANA_ENABLE: true
           TEKTON_ENABLE: true
+          test_name: kind_libbpf_with_prometheus_and_tekton
         - cluster_provider: microshift
           ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: false
           GRAFANA_ENABLE: false
           TEKTON_ENABLE: false
+          test_name: microshift_libbpf
         - cluster_provider: microshift
           ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: true
           GRAFANA_ENABLE: true
           TEKTON_ENABLE: false
+          test_name: microshift_libbpf_with_prometheus
     steps:
     - uses: actions/checkout@v4
     - uses: ./
+      name: ${{matrix.test_name}}
       with:
         ebpfprovider: ${{matrix.ebpf_provider}}
         cluster_provider: ${{matrix.cluster_provider}}
