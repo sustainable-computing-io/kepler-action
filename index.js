@@ -72,9 +72,9 @@ function installKubectl(kubectl_version) {
   executeCommand("mv kustomize /usr/local/bin/");
 }
 
-function installKind() {
+function installKind(kind_version) {
   core.info(`Get Kind with latest version`);
-  executeCommand("curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64","fail to install kind");
+  executeCommand("curl -Lo ./kind https://kind.sigs.k8s.io/dl/v"+kind_version+"/kind-linux-amd64","fail to install kind");
   executeCommand("chmod +x ./kind");
   executeCommand("mv ./kind /usr/local/bin/kind");
 }
@@ -144,8 +144,9 @@ async function run() {
     }
     if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', '') == 'kind') {
       const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
+      const kind_version = getInputOrDefault('kind_version','0.22.0');
       installKubectl(kubectl_version);
-      installKind()
+      installKind(kind_version)
       await setup();
     }
     if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
