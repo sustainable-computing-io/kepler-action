@@ -17,21 +17,6 @@ function executeCommand(command, errorMessage) {
   }
 }
 
-function installLinuxHeaders() {
-  core.info(`Linux header`);
-  executeCommand("sudo apt-get install -y linux-headers-`uname -r`", "fail to install linux headers");
-}
-
-function installLinuxModules() {
-  core.info(`Linux modules`);
-  executeCommand("sudo apt-get install -y linux-modules-`uname -r`", "fail to install linux modules");
-}
-
-function installLinuxExtraModules() {
-  core.info(`Linux extra modules`);
-  executeCommand("sudo apt-get install -y linux-modules-extra-`uname -r`", "fail to install linux extra modules");
-}
-
 function modprobe(moduleName) {
   core.info(`modprobe`);
   if (moduleName == "") {
@@ -49,16 +34,6 @@ function installXgboost(artifacts_version, xgboost_version) {
   executeCommand("tar -zxvf xgboost-"+xgboost_version+"-Linux.sh.tar.gz", "fail to untar xgboost pkg");
   executeCommand("sudo sh xgboost-"+xgboost_version+"-Linux.sh --skip-license  --prefix=/usr/local", "fail to install xgboost pkg");
   executeCommand("sudo ldconfig", "fail to ldconfig");
-}
-
-function installLibbpf(libbpf_version) {
-  core.info(`installing libbpf version ` + libbpf_version + ` from source`);
-  executeCommand("sudo apt-get install -y libelf-dev", "failed to install libelf-dev");
-  executeCommand("mkdir -p temp-libbpf");
-  executeCommand("cd temp-libbpf && git clone -b " + libbpf_version + " https://github.com/libbpf/libbpf");
-  executeCommand("cd temp-libbpf/libbpf/src && sudo BUILD_STATIC_ONLY=y make install", "failed to install libbpf archive library");
-  executeCommand("cd temp-libbpf/libbpf/src && sudo make install_uapi_headers", "failed to install libbpf headers");
-  executeCommand("sudo rm -rf temp-libbpf");
 }
 
 function installKubectl(kubectl_version) {
@@ -81,14 +56,10 @@ function installKind(kind_version) {
 
 async function setup() {
   const cluster_provider = getInputOrDefault('cluster_provider', 'kind');
-  const local_dev_cluster_version = getInputOrDefault('local_dev_cluster_version', 'main');
   const prometheus_enable = getInputOrDefault('prometheus_enable', '');
   const prometheus_operator_version = getInputOrDefault('prometheus_operator_version', '');
   const grafana_enable = getInputOrDefault('grafana_enable', '');
   const tekton_enable = getInputOrDefault('tekton_enable', '');
-
-  core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
-  executeCommand("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
 
   let parameterExport = "export CLUSTER_PROVIDER="+cluster_provider;
 
@@ -112,46 +83,57 @@ async function setup() {
   parameterExport = parameterExport + " && "
   core.debug(parameterExport);
   executeCommand(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`, "fail to setup local-dev-cluster")
+  executeCommand(`cp ./local-dev-cluster/.kube/config /tmp/kubeconfig`)
 }
 
 async function run() {
+  // init envs
   const runningBranch = getInputOrDefault('runningBranch', '');
   const ebpfprovider = getInputOrDefault('ebpfprovider', '');
-
+  const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
+  // download local dev cluster
+  const local_dev_cluster_version = getInputOrDefault('local_dev_cluster_version', 'main');
+  core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
+  executeCommand("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
+  // download kubectl and other tools
+  installKubectl(kubectl_version);
+  // end of prepare
   try {
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
     const xgboost_version = getInputOrDefault('xgboost_version', '');
     const libbpf_version = getInputOrDefault('libbpf_version', 'v1.2.0');
     const kernel_module_names = getInputOrDefault('kernel_module_names', ''); // comma delimited names, for example: rapl,intel_rapl_common
-  
-    if (kernel_module_names.length > 0) {
+    const install_containerruntime = getInputOrDefault('install_containerruntime', '');
+    // base on a general workflow
+    // Step 1 linux header, models, extramodules, ebpf
+    // prerequisites
+    if (kernel_module_names.length > 0 || ebpfprovider == 'libbpf')  {
+      let prerequisitesExport="export LIBBPF_VERSION="+libbpf_version;
+      core.debug(prerequisitesExport);
+      executeCommand(prerequisitesExport +` && cd local-dev-cluster && bash -c './main.sh prerequisites'`, "fail to install prerequisites via local-dev-cluster")
       core.info(`kernel_module_names are `+ kernel_module_names);
-      installLinuxModules();
-      installLinuxExtraModules();
       // loop through all kernel module names
       kernel_module_names.split(',').forEach(modprobe);
     }
-    
+    // Optional xgboost
     // if xgboost_version is empty, skip xgboost installation
     if (xgboost_version.length === 0) {
       core.info(`xgboost_version is empty, skip xgboost installation`);
     } else {
       installXgboost(artifacts_version, xgboost_version);
     }
-    if (ebpfprovider == 'libbpf') {
-      installLinuxHeaders();
-      installLibbpf(libbpf_version);
+    // Optional container runtime
+    if (install_containerruntime.length > 0 ) {
+      executeCommand(` cd local-dev-cluster && bash -c './main.sh containerruntime'`, "fail to install container runtime via local-dev-cluster")
     }
+    // Step 2 k8s cluster
+    // run specific steps or not
     if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', '') == 'kind') {
-      const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
       const kind_version = getInputOrDefault('kind_version','0.22.0');
-      installKubectl(kubectl_version);
       installKind(kind_version)
       await setup();
     }
     if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
-      const kubectl_version = getInputOrDefault('kubectl_version', '1.25.4');
-      installKubectl(kubectl_version);
       await setup();
     }
   } catch (error) {
