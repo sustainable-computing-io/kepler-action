@@ -60,6 +60,7 @@ verify_xgboost() {
 }
 
 verify_cluster() {
+	export KUBECONFIG="/tmp/kubeconfig"
 	# basic command check
 	which kubectl
 	which kustomize
