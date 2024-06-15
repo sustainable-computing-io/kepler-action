@@ -48,42 +48,24 @@ jobs:
       matrix:
         include:
         - cluster_provider: kind
-          ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: false
           GRAFANA_ENABLE: false
           TEKTON_ENABLE: false
-          test_name: kind_libbpf
+          test_name: kind_basic
         - cluster_provider: kind
-          ebpf_provider: libbpf
-          prometheus_operator_version: v0.12.0
-          PROMETHEUS_ENABLE: true
-          GRAFANA_ENABLE: true
-          TEKTON_ENABLE: false
-          test_name: kind_libbpf_with_prometheus
-        - cluster_provider: kind
-          ebpf_provider: libbpf
-          prometheus_operator_version: v0.12.0
-          PROMETHEUS_ENABLE: false
-          GRAFANA_ENABLE: false
-          TEKTON_ENABLE: true
-          test_name: kind_libbpf_with_tekton
-        - cluster_provider: kind
-          ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: true
           GRAFANA_ENABLE: true
           TEKTON_ENABLE: true
-          test_name: kind_libbpf_with_prometheus_and_tekton
+          test_name: kind_with_prometheus_and_tekton
         - cluster_provider: microshift
-          ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: false
           GRAFANA_ENABLE: false
           TEKTON_ENABLE: false
           test_name: microshift_libbpf
         - cluster_provider: microshift
-          ebpf_provider: libbpf
           prometheus_operator_version: v0.12.0
           PROMETHEUS_ENABLE: true
           GRAFANA_ENABLE: true
