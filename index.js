@@ -54,15 +54,17 @@ function installKind(kind_version,local_path) {
   executeCommand("mv ./kind "+local_path);
 }
 
-async function setup() {
-  const cluster_provider = getInputOrDefault('cluster_provider', 'kind');
+async function configcluster() {
+  core.info('start config cluster');
+  core.info('checking kubeconf at /tmp/kubeconfig')
+  let result=shell.exec("ls -al /tmp/kubeconfig");
+  core.info(result.stdout);
+
   const prometheus_enable = getInputOrDefault('prometheus_enable', '');
   const prometheus_operator_version = getInputOrDefault('prometheus_operator_version', '');
   const grafana_enable = getInputOrDefault('grafana_enable', '');
   const tekton_enable = getInputOrDefault('tekton_enable', '');
-
-  let parameterExport = "export CLUSTER_PROVIDER="+cluster_provider;
-
+  let parameterExport = "export KUBECONFIG_ROOT_DIR=/tmp/kubeconfig"
   if (prometheus_enable.length !== 0) {
     core.info(`use prometheus enable `+prometheus_enable);
     parameterExport = parameterExport + " && export PROMETHEUS_ENABLE="+prometheus_enable;
@@ -80,10 +82,19 @@ async function setup() {
     parameterExport = parameterExport + " && export TEKTON_ENABLE="+tekton_enable;
   }
 
-  parameterExport = parameterExport + " && "
-  core.debug(parameterExport);
-  executeCommand(parameterExport +` cd local-dev-cluster && bash -c './main.sh up'`, "fail to setup local-dev-cluster")
-  executeCommand(`cp ./local-dev-cluster/.kube/config /tmp/kubeconfig`)
+  let command = parameterExport +` && cd local-dev-cluster && mkdir -p ./tmp && bash -xc './main.sh config'`;
+  core.info('command going to be executed: ' + command);
+  executeCommand(command, "fail to config cluster")
+}
+
+async function setupcluster() {
+  core.info('start set up cluster');
+  const cluster_provider = getInputOrDefault('cluster_provider', 'kind');
+  let parameterExport = "export CLUSTER_CONFIG=false && export CLUSTER_PROVIDER="+cluster_provider;  
+  let command = parameterExport +` && cd local-dev-cluster && bash -xc './main.sh up'`;
+  core.info('command going to be executed: ' + command);
+  executeCommand(command, "fail to setup local-dev-cluster")
+  executeCommand(`mkdir -p /tmp/kubeconfig && cp ./local-dev-cluster/.kube/config /tmp/kubeconfig/`)
 }
 
 async function run() {
@@ -95,9 +106,14 @@ async function run() {
   // download local dev cluster
   const local_dev_cluster_version = getInputOrDefault('local_dev_cluster_version', 'main');
   core.info(`Get local-cluster-dev with version `+ local_dev_cluster_version);
-  executeCommand("git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
+  // if there is local-cluster-dev folder skip
+  executeCommand("rm -rf local-dev-cluster && git clone -b "+local_dev_cluster_version+" https://github.com/sustainable-computing-io/local-dev-cluster.git --depth=1", "fail to get local-dev-cluster");
   // download kubectl and other tools
-  installKubectl(kubectl_version,local_path);
+  // if there kubectl skip
+  let is_kubectl = shell.exec("command -v kubectl");
+  if (is_kubectl.code !== 0) {
+    installKubectl(kubectl_version,local_path);
+  }
   // end of prepare
   try {
     const artifacts_version = getInputOrDefault('artifacts_version', '0.26.0');
@@ -106,6 +122,7 @@ async function run() {
     const kernel_module_names = getInputOrDefault('kernel_module_names', ''); // comma delimited names, for example: rapl,intel_rapl_common
     const install_containerruntime = getInputOrDefault('install_containerruntime', '');
     const restartcontianerruntime = getInputOrDefault('restartcontianerruntime', '');
+    const config_cluster = getInputOrDefault('config_cluster', '');
     // base on a general workflow
     // Step 1 linux header, models, extramodules, ebpf
     // prerequisites
@@ -140,10 +157,19 @@ async function run() {
     if (runningBranch == 'kind' || getInputOrDefault('cluster_provider', '') == 'kind') {
       const kind_version = getInputOrDefault('kind_version','0.22.0');
       installKind(kind_version,local_path)
-      await setup();
+      await setupcluster();
+      if (config_cluster != 'false' ) {
+        await configcluster();
+      }
     }
     if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
-      await setup();
+      await setupcluster();
+      if (config_cluster != 'false' ){
+        await configcluster();
+      }
+    }
+    if (getInputOrDefault('cluster_provider', '') == 'existing') {
+      await configcluster(); 
     }
   } catch (error) {
     core.setFailed(error.message);
