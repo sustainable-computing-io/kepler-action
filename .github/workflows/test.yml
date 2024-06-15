@@ -86,6 +86,28 @@ jobs:
       run: |
         ./verify.sh cluster
 
+  test_existing_cluster:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # set up k8s cluster
+    - uses: ./
+      name: dummy cluster for test
+      with:
+        cluster_provider: kind
+        config_cluster: false
+    # config cluster
+    - uses: ./
+      name: config cluster
+      with:
+        cluster_provider: existing
+        prometheus_enable: true
+        tekton_enable: true
+    - name: verify
+      run: |
+        ./verify.sh cluster
+
+
   # test if kernel module can be loaded, this is very os and instance specific, ignore if it fails
   test_kernel_module:
     runs-on: ubuntu-latest
