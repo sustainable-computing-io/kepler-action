@@ -10281,12 +10281,6 @@ async function run() {
         await configcluster();
       }
     }
-    if (runningBranch == 'microshift' || getInputOrDefault('cluster_provider', '') == 'microshift') {
-      await setupcluster();
-      if (config_cluster != 'false' ){
-        await configcluster();
-      }
-    }
     if (getInputOrDefault('cluster_provider', '') == 'existing') {
       await configcluster(); 
     }
