@@ -1,5 +1,5 @@
-name: "units-test"
-on:
+name: units-test
+on: # yamllint disable-line rule:truthy
   workflow_call:
 
 jobs:
@@ -7,9 +7,8 @@ jobs:
   units:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - run: npm ci
-    # - run: npm test
+      - uses: actions/checkout@v4
+      - run: npm ci
 
   # test action works running from the graph
   test_ebpf:
@@ -18,27 +17,27 @@ jobs:
       matrix:
         ebpf_provider: [libbpf]
     steps:
-    - name: Install mlocate
-      run: sudo apt-get install -y mlocate
-    - uses: actions/checkout@v4
-    - uses: ./
-      with:
-        ebpfprovider: ${{matrix.ebpf_provider}}
-    - name: verify
-      run: |
-        ./verify.sh ${{matrix.ebpf_provider}}
+      - name: Install mlocate
+        run: sudo apt-get install -y mlocate
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          ebpfprovider: ${{matrix.ebpf_provider}}
+      - name: verify
+        run: |
+          ./verify.sh ${{matrix.ebpf_provider}}
 
   test_xgboost:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./
-      with:
-        xgboost_version: 2.0.1
-        artifact_version: 0.26.0
-    - name: verify
-      run: |
-        ./verify.sh xgboost
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          xgboost_version: 2.0.1
+          artifact_version: 0.26.0
+      - name: verify
+        run: |
+          ./verify.sh xgboost
 
   # test action works running from the graph
   test_local_cluster:
@@ -47,65 +46,64 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - cluster_provider: kind
-          prometheus_operator_version: v0.12.0
-          PROMETHEUS_ENABLE: false
-          GRAFANA_ENABLE: false
-          TEKTON_ENABLE: false
-          test_name: kind_basic
-        - cluster_provider: kind
-          prometheus_operator_version: v0.12.0
-          PROMETHEUS_ENABLE: true
-          GRAFANA_ENABLE: true
-          TEKTON_ENABLE: true
-          test_name: kind_with_prometheus_and_tekton
+          - cluster_provider: kind
+            prometheus_operator_version: v0.12.0
+            PROMETHEUS_ENABLE: false
+            GRAFANA_ENABLE: false
+            TEKTON_ENABLE: false
+            test_name: kind_basic
+          - cluster_provider: kind
+            prometheus_operator_version: v0.12.0
+            PROMETHEUS_ENABLE: true
+            GRAFANA_ENABLE: true
+            TEKTON_ENABLE: true
+            test_name: kind_with_prometheus_and_tekton
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./
-      name: ${{matrix.test_name}}
-      with:
-        ebpfprovider: ${{matrix.ebpf_provider}}
-        cluster_provider: ${{matrix.cluster_provider}}
-        prometheus_enable: ${{matrix.PROMETHEUS_ENABLE}}
-        prometheus_operator_version: v0.12.0
-        grafana_enable: ${{matrix.GRAFANA_ENABLE}}
-        tekton_enable: ${{matrix.TEKTON_ENABLE}}
-    - name: verify
-      run: |
-        ./verify.sh cluster
+      - uses: actions/checkout@v4
+      - uses: ./
+        name: ${{matrix.test_name}}
+        with:
+          ebpfprovider: ${{matrix.ebpf_provider}}
+          cluster_provider: ${{matrix.cluster_provider}}
+          prometheus_enable: ${{matrix.PROMETHEUS_ENABLE}}
+          prometheus_operator_version: v0.12.0
+          grafana_enable: ${{matrix.GRAFANA_ENABLE}}
+          tekton_enable: ${{matrix.TEKTON_ENABLE}}
+      - name: verify
+        run: |
+          ./verify.sh cluster
 
   test_existing_cluster:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    # set up k8s cluster
-    - uses: ./
-      name: dummy cluster for test
-      with:
-        cluster_provider: kind
-        config_cluster: false
-    # config cluster
-    - uses: ./
-      name: config cluster
-      with:
-        cluster_provider: existing
-        prometheus_enable: true
-        tekton_enable: true
-    - name: verify
-      run: |
-        ./verify.sh cluster
-
+      - uses: actions/checkout@v4
+      # set up k8s cluster
+      - uses: ./
+        name: dummy cluster for test
+        with:
+          cluster_provider: kind
+          config_cluster: false
+      # config cluster
+      - uses: ./
+        name: config cluster
+        with:
+          cluster_provider: existing
+          prometheus_enable: true
+          tekton_enable: true
+      - name: verify
+        run: |
+          ./verify.sh cluster
 
   # test if kernel module can be loaded, this is very os and instance specific, ignore if it fails
   test_kernel_module:
     runs-on: ubuntu-latest
     env:
-      KERNEL_MODULE_NAMES: "rapl,intel_rapl_common,intel_rapl_msr"
+      KERNEL_MODULE_NAMES: rapl,intel_rapl_common,intel_rapl_msr
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./
-      with:
-        kernel_module_names: ${{ env.KERNEL_MODULE_NAMES }}}
-    - name: verify
-      run: |
-        ./verify.sh modprobe ${{ env.KERNEL_MODULE_NAMES }}
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          kernel_module_names: ${{ env.KERNEL_MODULE_NAMES }}}
+      - name: verify
+        run: |
+          ./verify.sh modprobe ${{ env.KERNEL_MODULE_NAMES }}

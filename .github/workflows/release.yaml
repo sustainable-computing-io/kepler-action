@@ -1,11 +1,11 @@
 name: Release
-on:
+on: # yamllint disable-line rule:truthy
   workflow_dispatch:
     # Inputs the workflow accepts.
     inputs:
       tag:
-        description: "Tag name, e.g. 0.0.0"
-        default: ""
+        description: Tag name, e.g. 0.0.0
+        default:
         required: true
 
 jobs:
@@ -15,7 +15,6 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -57,9 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "v${{ github.event.inputs.tag }}"
-          release_name: "v${{github.event.inputs.tag}}"
+          tag_name: v${{ github.event.inputs.tag }}
+          release_name: v${{github.event.inputs.tag}}
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
-
