@@ -1,18 +1,60 @@
-name: 'kepler github action for set up cluster'
-description: 'kepler github action for set up cluster'
+name: kepler github action for set up cluster
+description: kepler github action for set up cluster
 inputs:
-  runningBranch:  # id of input
-    description: 'runningBranch for kepler CI'
+  runningBranch: # id of input
+    description: runningBranch for kepler CI
     required: false
   ebpfprovider:
-    description: 'ebpf provider for kepler CI'
+    description: ebpf provider for kepler CI
     required: false
   cluster_provider:
-    description: 'k8s cluster provider for kepler CI'
+    description: k8s cluster provider for kepler CI
     required: false
   kernel_module_names:
-    description: 'comma delimited kernel module names to install for kepler CI, e.g. rapl,intel_rapl_msr'
+    description: comma delimited kernel module names to install for kepler CI, e.g. rapl,intel_rapl_msr
+    required: false
+  prometheus_enable:
+    description: enable prometheus for kepler CI
+    required: false
+  prometheus_operator_version:
+    description: prometheus operator version for kepler CI
+    required: false
+  grafana_enable:
+    description: enable grafana for kepler CI
+    required: false
+  tekton_enable:
+    description: enable tekton for kepler CI
+    required: false
+  kind_version:
+    description: kind version for kepler CI
+    required: false
+  kubectl_version:
+    description: kubectl version for kepler CI
+    required: false
+  local_path:
+    description: local path for kepler CI
+    required: false
+  local_dev_cluster_version:
+    description: local dev cluster version for kepler CI
+    required: false
+  artifacts_version:
+    description: artifacts version for kepler CI
+    required: false
+  xgboost_version:
+    description: xgboost version for kepler CI
+    required: false
+  libbpf_version:
+    description: libbpf version for kepler CI
+    required: false
+  install_containerruntime:
+    description: install container runtime for kepler CI
+    required: false
+  restartcontianerruntime:
+    description: restart container runtime for kepler CI
+    required: false
+  config_cluster:
+    description: config cluster for kepler CI
     required: false
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: node20
+  main: dist/index.js
