@@ -5,15 +5,15 @@
 # We need to make sure the checked-in `index.js` actually matches what we expect it to be.
 name: Check dist/
 
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches:
       - main
     paths-ignore:
-      - '**.md'
+      - "**.md"
   pull_request:
     paths-ignore:
-      - '**.md'
+      - "**.md"
   workflow_dispatch:
 
 jobs:
