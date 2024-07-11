@@ -12,8 +12,21 @@ You can now consume the action by referencing the main branch
       - name: use kepler action for kind cluster build
         uses: sustainable-computing-io/KeplerK8SAction@main
         with:
-          runningBranch: kind
+          cluster_provider: existing
+          prometheus_enable: true
+          tekton_enable: true
+          grafana_enable: true
 ```
+
+| parameters | value | comments |
+|-------------|---------------|------------|
+| install_containerruntime | true | Optional, set up container runtime as docker on the server |
+| restartcontianerruntime | true | Optional, restart container runtime service as docker on the server |
+| cluster_provider    | kind/existing         | start up a kind cluster or using existing cluster, note: KUBECONFIG_ROOT_DIR=/tmp/kubeconfig for kubeconfig     |
+| config_cluster | false | Optional, if using kind cluster, and you don't want to config it, set it to false |
+| prometheus_enable   | true         | Optional, set up prometheus on the cluster    |
+| grafana_enable      | true         | Optional, set up grafana on the cluster       |
+| tekton_enable       | true         | Optional, set up tekton on the cluster        |
 
 ## Local usage
 [here](https://github.com/sustainable-computing-io/local-dev-cluster)
