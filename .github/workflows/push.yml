@@ -7,3 +7,5 @@ on: # yamllint disable-line rule:truthy
 jobs:
   test:
     uses: ./.github/workflows/test.yml
+  edge:
+    uses: ./.github/workflows/testEdge.yml

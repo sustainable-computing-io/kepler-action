@@ -10,3 +10,5 @@ jobs:
     uses: ./.github/workflows/yamllint.yml
   test:
     uses: ./.github/workflows/test.yml
+  edge:
+    uses: ./.github/workflows/testEdge.yml

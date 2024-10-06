@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const shell = require('shelljs');
+const fs = require('fs');
 
 function getInputOrDefault(inputName, defaultValue) {
   const input = core.getInput(inputName);
@@ -94,6 +95,10 @@ async function setupcluster() {
   let command = parameterExport +` && cd local-dev-cluster && bash -xc './main.sh up'`;
   core.info('command going to be executed: ' + command);
   executeCommand(command, "fail to setup local-dev-cluster")
+  if (fs.existsSync('/tmp/kubeconfig')) {
+    core.info('find exists kubeconfig, overwrite by local-dev-cluster setting');
+    executeCommand(`mv /tmp/kubeconfig /tmp/kubeconfig_bak`)
+  } 
   executeCommand(`mkdir -p /tmp/kubeconfig && cp ./local-dev-cluster/.kube/config /tmp/kubeconfig/`)
 }
 

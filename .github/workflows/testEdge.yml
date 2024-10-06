@@ -1,0 +1,29 @@
+name: units-test-edge
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+
+jobs:
+  test_existing_cluster_with_existing_file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # set up an existing_file
+      - name: prepare test case
+        run: |
+          echo 1 > /tmp/kubeconfig
+      # set up k8s cluster
+      - uses: ./
+        name: dummy cluster for test
+        with:
+          cluster_provider: kind
+          config_cluster: false
+      # config cluster
+      - uses: ./
+        name: config cluster
+        with:
+          cluster_provider: existing
+          prometheus_enable: true
+          tekton_enable: true
+      - name: verify
+        run: |
+          ./verify.sh cluster

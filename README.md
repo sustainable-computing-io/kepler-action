@@ -16,6 +16,12 @@ You can now consume the action by referencing the main branch
           prometheus_enable: true
           tekton_enable: true
           grafana_enable: true
+
+      - name: error handle
+        if: ${{ failure() }}
+        run: |
+          ls /tmp
+          ls /tmp/kubeconfig
 ```
 
 | parameters | value | comments |
