@@ -27,3 +27,29 @@ jobs:
       - name: verify
         run: |
           ./verify.sh cluster
+  test_cutsomer_cluster_with_cutsomer_config_file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # set up k8s cluster
+      - uses: ./
+        name: dummy cluster for test
+        with:
+          cluster_provider: kind
+          config_cluster: false
+      # customer config file
+      - name: verify
+        run: |
+          mv /tmp/kubeconfig /tmp/testconfig
+      # config cluster
+      - uses: ./
+        name: config cluster
+        with:
+          cluster_provider: existing
+          prometheus_enable: true
+          tekton_enable: true
+          kubeconfig_root_dir: /tmp/testconfig
+      - name: verify
+        run: |
+          mv /tmp/testconfig /tmp/kubeconfig
+          ./verify.sh cluster

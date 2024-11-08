@@ -10904,7 +10904,8 @@ async function configcluster() {
   const prometheus_operator_version = getInputOrDefault('prometheus_operator_version', '');
   const grafana_enable = getInputOrDefault('grafana_enable', '');
   const tekton_enable = getInputOrDefault('tekton_enable', '');
-  let parameterExport = "export KUBECONFIG_ROOT_DIR=/tmp/kubeconfig"
+  const kubeconfig_root_dir = getInputOrDefault('kubeconfig_root_dir', '/tmp/kubeconfig');
+  let parameterExport = "export KUBECONFIG_ROOT_DIR="+kubeconfig_root_dir;
   if (prometheus_enable.length !== 0) {
     core.info(`use prometheus enable `+prometheus_enable);
     parameterExport = parameterExport + " && export PROMETHEUS_ENABLE="+prometheus_enable;

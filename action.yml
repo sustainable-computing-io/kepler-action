@@ -25,6 +25,9 @@ inputs:
   tekton_enable:
     description: enable tekton for kepler CI
     required: false
+  kubeconfig_root_dir:
+    description: kubeconfig_root_dir for k8s cluster
+    required: false
   kind_version:
     description: kind version for kepler CI
     required: false
