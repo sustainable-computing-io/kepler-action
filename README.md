@@ -16,6 +16,7 @@ You can now consume the action by referencing the main branch
           prometheus_enable: true
           tekton_enable: true
           grafana_enable: true
+          kubeconfig_root_dir: /tmp/kubeconfig
 
       - name: error handle
         if: ${{ failure() }}
