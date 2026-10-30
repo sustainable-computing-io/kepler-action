@@ -6,7 +6,7 @@ jobs:
   test_existing_cluster_with_existing_file:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # set up an existing_file
       - name: prepare test case
         run: |
@@ -30,7 +30,7 @@ jobs:
   test_cutsomer_cluster_with_cutsomer_config_file:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # set up k8s cluster
       - uses: ./
         name: dummy cluster for test

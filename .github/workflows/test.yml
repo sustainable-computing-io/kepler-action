@@ -7,7 +7,7 @@ jobs:
   units:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: npm ci
 
   # test action works running from the graph
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Install mlocate
         run: sudo apt-get install -y mlocate
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           ebpfprovider: ${{matrix.ebpf_provider}}
@@ -30,7 +30,7 @@ jobs:
   test_xgboost:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           xgboost_version: 2.0.1
@@ -59,7 +59,7 @@ jobs:
             TEKTON_ENABLE: true
             test_name: kind_with_prometheus_and_tekton
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         name: ${{matrix.test_name}}
         with:
@@ -77,7 +77,7 @@ jobs:
   test_existing_cluster:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # set up k8s cluster
       - uses: ./
         name: dummy cluster for test
@@ -101,7 +101,7 @@ jobs:
     env:
       KERNEL_MODULE_NAMES: rapl,intel_rapl_common,intel_rapl_msr
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           kernel_module_names: ${{ env.KERNEL_MODULE_NAMES }}}
